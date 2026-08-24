@@ -16,7 +16,23 @@ import { CartesianGrid, Line, LineChart as ReLineChart, ResponsiveContainer, Too
 import "./styles.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
-let csrfToken: string | null = null;
+
+// The session cookie set during the OAuth redirect (localhost:5173 <-> localhost:8000)
+// is not reliably kept by every browser across that redirect chain. Auth is carried
+// as a bearer token instead: issued once as a `?token=` query param on OAuth
+// success, then stored and sent as `Authorization: Bearer <token>` on every request.
+let authToken: string | null = localStorage.getItem("authToken");
+
+(function consumeTokenFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+  if (!token) return;
+  authToken = token;
+  localStorage.setItem("authToken", token);
+  const url = new URL(window.location.href);
+  url.searchParams.delete("token");
+  window.history.replaceState({}, "", url.toString());
+})();
 
 type ViewKey = "dashboard" | "calendar" | "policies" | "records" | "settings";
 type Status = "stable" | "caution" | "risk";
@@ -136,14 +152,13 @@ function currentMonthValue() {
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
 }
 
+function authHeaders(): Record<string, string> {
+  return authToken ? { Authorization: `Bearer ${authToken}` } : {};
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const method = options?.method?.toUpperCase() ?? "GET";
-  if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
-    await loadCsrfToken();
-  }
   const response = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(csrfToken ? { "X-XSRF-TOKEN": csrfToken } : {}), ...options?.headers },
-    credentials: "include",
+    headers: { "Content-Type": "application/json", ...authHeaders(), ...options?.headers },
     ...options
   });
   if (!response.ok) throw new Error(`${path} failed: ${response.status}`);
@@ -151,18 +166,16 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return response.json();
 }
 
-async function loadCsrfToken() {
-  if (csrfToken) return;
-  const response = await fetch(`${API_BASE}/auth/csrf`, { credentials: "include" });
-  if (!response.ok) throw new Error("CSRF token could not be loaded");
-  const payload = await response.json() as { token: string };
-  csrfToken = payload.token;
-}
-
 async function optionalRequest<T>(path: string): Promise<T | null> {
-  const response = await fetch(`${API_BASE}${path}`, { credentials: "include" });
-  if (!response.ok) return null;
-  return response.json();
+  try {
+    const response = await fetch(`${API_BASE}${path}`, { headers: authHeaders() });
+    if (response.status === 204) return null;
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (networkError) {
+    console.warn(`[optionalRequest] ${path} failed at the network level, treating as unauthenticated/unavailable`, networkError);
+    return null;
+  }
 }
 
 function App() {
@@ -394,7 +407,8 @@ function App() {
 
 async function logout() {
   await request<void>("/auth/logout", { method: "POST" });
-  csrfToken = null;
+  authToken = null;
+  localStorage.removeItem("authToken");
   window.location.assign(window.location.origin);
 }
 
