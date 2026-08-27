@@ -607,6 +607,20 @@ button.preset {
   max-width: 180px;
 }
 
+.year-month-select {
+  display: flex;
+  gap: 8px;
+}
+
+.year-month-select select {
+  min-width: 0;
+  flex: 1;
+}
+
+.calendar-toolbar .year-month-select {
+  max-width: 220px;
+}
+
 .weekday-row,
 .calendar-grid {
   display: grid;
