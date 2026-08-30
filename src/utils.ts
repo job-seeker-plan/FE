@@ -1,7 +1,15 @@
 import type { JobEvent } from "./types";
 
 export function formatWon(value: number) {
-  return `${Math.round(value).toLocaleString("ko-KR")}원`;
+  return `${Math.round(value / 10_000).toLocaleString("ko-KR")}만원`;
+}
+
+export function toWon(value: string | number) {
+  return Math.round(Number(value || 0) * 10_000);
+}
+
+export function formatManwon(value: number) {
+  return `${Math.round(value).toLocaleString("ko-KR")}만원`;
 }
 
 export function currentMonthValue() {

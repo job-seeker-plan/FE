@@ -7,11 +7,11 @@ import { ProfilePanel } from "../components/ProfilePanel";
 function toProfileForm(profile: UserProfile): ProfileForm {
   return {
     user_id: profile.user_id,
-    available_cash: String(profile.available_cash),
-    monthly_income: String(profile.monthly_income),
+    available_cash: String(Math.round(profile.available_cash / 10_000)),
+    monthly_income: String(Math.round(profile.monthly_income / 10_000)),
     age: String(profile.age),
     region: profile.region,
-    monthly_income_for_policy: String(profile.monthly_income_for_policy),
+    monthly_income_for_policy: String(Math.round(profile.monthly_income_for_policy / 10_000)),
     target_job_month: profile.target_job_month
   };
 }

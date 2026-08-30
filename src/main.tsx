@@ -4,7 +4,7 @@ import { AlertTriangle } from "lucide-react";
 import "./styles.css";
 
 import { clearAuthToken, optionalRequest, request } from "./api";
-import { currentMonthValue } from "./utils";
+import { currentMonthValue, toWon } from "./utils";
 import { viewTitle } from "./viewTitle";
 import type {
   AuthProvider,
@@ -59,7 +59,6 @@ function App() {
     spend: "",
     bill: "",
     balance: "",
-    credit_score: "",
     income: ""
   });
   const [selectedPolicyIds, setSelectedPolicyIds] = useState<string[]>([]);
@@ -130,7 +129,7 @@ function App() {
       setEventNotice(null);
       await request<JobEvent>("/events", {
         method: "POST",
-        body: JSON.stringify({ ...eventForm, expected_cost: Number(eventForm.expected_cost), memo: "" })
+        body: JSON.stringify({ ...eventForm, expected_cost: toWon(eventForm.expected_cost), memo: "" })
       });
       setEventForm({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
       await loadDashboard();
@@ -147,14 +146,13 @@ function App() {
         method: "POST",
         body: JSON.stringify({
           month: recordForm.month,
-          spend: Number(recordForm.spend),
-          bill: Number(recordForm.bill),
-          balance: Number(recordForm.balance),
-          credit_score: recordForm.credit_score ? Number(recordForm.credit_score) : null,
-          income: recordForm.income ? Number(recordForm.income) : 0
+          spend: toWon(recordForm.spend),
+          bill: toWon(recordForm.bill),
+          balance: toWon(recordForm.balance),
+          income: toWon(recordForm.income)
         })
       });
-      setRecordForm({ month: "", spend: "", bill: "", balance: "", credit_score: "", income: "" });
+      setRecordForm({ month: "", spend: "", bill: "", balance: "", income: "" });
       await loadDashboard();
     } catch {
       setRecordNotice("기록을 저장하지 못했어요. 값을 다시 확인해 주세요.");
@@ -170,10 +168,10 @@ function App() {
       method: "POST",
       body: JSON.stringify({
         extra_month: eventForm.event_date ? eventForm.event_date.slice(0, 7) : null,
-        extra_cost: Number(eventForm.expected_cost) || 0,
+        extra_cost: toWon(eventForm.expected_cost),
         policy_ids: selectedPolicyIds,
         confirmed_support_month: confirmedSupport.month || null,
-        confirmed_support_amount: Number(confirmedSupport.amount) || 0
+        confirmed_support_amount: toWon(confirmedSupport.amount)
       })
     });
     setScenario(nextScenario);
@@ -184,12 +182,12 @@ function App() {
       method: "PUT",
       body: JSON.stringify({
         user_id: authUser?.user_id ?? form.user_id,
-        available_cash: Number(form.available_cash),
-        monthly_income: Number(form.monthly_income),
+        available_cash: toWon(form.available_cash),
+        monthly_income: toWon(form.monthly_income),
         age: Number(form.age),
         region: form.region,
         employment_status: profile?.employment_status ?? "unemployed",
-        monthly_income_for_policy: Number(form.monthly_income_for_policy),
+        monthly_income_for_policy: toWon(form.monthly_income_for_policy),
         target_job_month: form.target_job_month
       })
     });

@@ -40,7 +40,6 @@ export type FinancialRecord = {
   spend: number;
   bill: number;
   balance: number;
-  credit_score: number | null;
   income: number;
 };
 
@@ -102,6 +101,5 @@ export type RecordForm = {
   spend: string;
   bill: string;
   balance: string;
-  credit_score: string;
   income: string;
 };

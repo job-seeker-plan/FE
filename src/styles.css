@@ -25,6 +25,17 @@ select {
   font: inherit;
 }
 
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
 button {
   border: 0;
   border-radius: 8px;
@@ -242,6 +253,27 @@ label > span {
   color: #334155;
   font-size: 13px;
   font-weight: 800;
+}
+
+.money-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.money-input input {
+  flex: 1;
+}
+
+.money-input > span {
+  flex: 0 0 auto;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.money-field {
+  gap: 7px;
 }
 
 .preset-row {
