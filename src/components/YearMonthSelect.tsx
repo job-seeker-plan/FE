@@ -13,13 +13,15 @@ export function YearMonthSelect({
   onChange,
   yearsBehind = 0,
   yearsAhead = 3,
-  allowEmpty = true
+  allowEmpty = true,
+  minMonthValue
 }: {
   value: string;
   onChange: (value: string) => void;
   yearsBehind?: number;
   yearsAhead?: number;
   allowEmpty?: boolean;
+  minMonthValue?: string;
 }) {
   const [year, setYear] = useState(() => splitYearMonth(value)[0]);
   const [month, setMonth] = useState(() => splitYearMonth(value)[1]);
@@ -42,7 +44,9 @@ export function YearMonthSelect({
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: yearsBehind + yearsAhead + 1 }, (_, index) => currentYear - yearsBehind + index);
-  const months = Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, "0"));
+  const [minYear, minMonth] = splitYearMonth(minMonthValue ?? "");
+  const months = Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, "0"))
+    .filter((month) => !minMonthValue || year !== minYear || month >= minMonth);
 
   function update(nextYear: string, nextMonth: string) {
     setYear(nextYear);
@@ -54,7 +58,7 @@ export function YearMonthSelect({
 
   return (
     <div className="year-month-select">
-      <select value={year} onChange={(event) => update(event.target.value, month)}>
+      <select value={year} onChange={(event) => update(event.target.value, event.target.value === minYear && month < minMonth ? "" : month)}>
         {allowEmpty && <option value="">연도</option>}
         {years.map((y) => <option key={y} value={String(y)}>{y}년</option>)}
       </select>

@@ -10,15 +10,14 @@ export function FinancialRecordPanel({ recordForm, setRecordForm, saveFinancialR
     <Panel title="월별 금융 기록">
       <div className="form-row">
         <YearMonthSelect value={recordForm.month} onChange={(value) => setRecordForm({ ...recordForm, month: value })} yearsBehind={2} yearsAhead={0} />
-        <input type="number" placeholder="카드 소비액" value={recordForm.spend} onChange={(event) => setRecordForm({ ...recordForm, spend: event.target.value })} />
+        <label className="money-field"><span>카드 소비액</span><div className="money-input"><input type="number" min="0" value={recordForm.spend} onChange={(event) => setRecordForm({ ...recordForm, spend: event.target.value })} /><span>만원</span></div></label>
       </div>
       <div className="form-row">
-        <input type="number" placeholder="청구금액" value={recordForm.bill} onChange={(event) => setRecordForm({ ...recordForm, bill: event.target.value })} />
-        <input type="number" placeholder="카드 잔액/부담" value={recordForm.balance} onChange={(event) => setRecordForm({ ...recordForm, balance: event.target.value })} />
+        <label className="money-field"><span>청구금액</span><div className="money-input"><input type="number" min="0" value={recordForm.bill} onChange={(event) => setRecordForm({ ...recordForm, bill: event.target.value })} /><span>만원</span></div></label>
+        <label className="money-field"><span>카드 잔액/부담</span><div className="money-input"><input type="number" min="0" value={recordForm.balance} onChange={(event) => setRecordForm({ ...recordForm, balance: event.target.value })} /><span>만원</span></div></label>
       </div>
       <div className="form-row">
-        <input type="number" placeholder="신용점수 선택" value={recordForm.credit_score} onChange={(event) => setRecordForm({ ...recordForm, credit_score: event.target.value })} />
-        <input type="number" placeholder="해당월 수입 선택" value={recordForm.income} onChange={(event) => setRecordForm({ ...recordForm, income: event.target.value })} />
+        <label className="money-field"><span>해당월 수입</span><div className="money-input"><input type="number" min="0" value={recordForm.income} onChange={(event) => setRecordForm({ ...recordForm, income: event.target.value })} /><span>만원</span></div></label>
       </div>
       <button onClick={saveFinancialRecord}><Database size={16} />기록 저장</button>
       {notice && <p className="muted">{notice}</p>}

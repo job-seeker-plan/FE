@@ -15,7 +15,7 @@ export function EventFormPanel({ eventForm, setEventForm, addEvent, runScenario,
       </div>
       <div className="form-row">
         <input type="date" value={eventForm.event_date} onChange={(event) => setEventForm({ ...eventForm, event_date: event.target.value })} />
-        <input type="number" placeholder="예상비용" value={eventForm.expected_cost} onChange={(event) => setEventForm({ ...eventForm, expected_cost: event.target.value })} />
+        <label className="money-field"><span>예상비용</span><div className="money-input"><input type="number" min="0" value={eventForm.expected_cost} onChange={(event) => setEventForm({ ...eventForm, expected_cost: event.target.value })} /><span>만원</span></div></label>
       </div>
       <div className="button-row">
         <button onClick={addEvent}><CalendarPlus size={16} />일정 저장</button>

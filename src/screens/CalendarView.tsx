@@ -27,7 +27,7 @@ export function CalendarView({ events, eventForm, setEventForm, addEvent, runSce
               <span className="day-number">{day.day}</span>
               <div className="calendar-events">
                 {day.events.slice(0, 3).map((event) => (
-                  <button className="event-chip" key={event.id} onClick={() => setEventForm({ title: event.title, event_type: event.event_type, event_date: event.event_date, expected_cost: String(event.expected_cost) })}>
+                  <button className="event-chip" key={event.id} onClick={() => setEventForm({ title: event.title, event_type: event.event_type, event_date: event.event_date, expected_cost: String(Math.round(event.expected_cost / 10_000)) })}>
                     {event.title}
                   </button>
                 ))}

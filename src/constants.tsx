@@ -13,6 +13,8 @@ export const eventTypeLabels: Record<string, string> = {
   other: "기타"
 };
 
+export const regions = ["서울", "경기", "인천", "부산", "대구", "광주", "대전", "울산", "세종", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
+
 export const navItems: Array<{ key: ViewKey; label: string; icon: React.ReactNode }> = [
   { key: "dashboard", label: "대시보드", icon: <LineChart size={17} /> },
   { key: "calendar", label: "취업 캘린더", icon: <CalendarDays size={17} /> },
