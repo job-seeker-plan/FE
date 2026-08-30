@@ -123,18 +123,53 @@ function App() {
     return [...costs.entries()].sort();
   }, [events]);
 
-  async function addEvent() {
-    if (!eventForm.title || !eventForm.event_date || !eventForm.expected_cost) return;
+  async function addEvent(): Promise<boolean> {
+    if (!eventForm.title.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(eventForm.event_date) || !eventForm.expected_cost) {
+      setEventNotice("일정명, 날짜(YYYY-MM-DD), 예상비용을 모두 입력해 주세요.");
+      return false;
+    }
     try {
       setEventNotice(null);
       await request<JobEvent>("/events", {
         method: "POST",
-        body: JSON.stringify({ ...eventForm, expected_cost: toWon(eventForm.expected_cost), memo: "" })
+        body: JSON.stringify({ title: eventForm.title.trim(), event_type: eventForm.event_type, event_date: eventForm.event_date, expected_cost: toWon(eventForm.expected_cost), memo: "" })
       });
       setEventForm({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
       await loadDashboard();
+      return true;
     } catch {
       setEventNotice("일정을 저장하지 못했어요. 입력값을 다시 확인해 주세요.");
+      return false;
+    }
+  }
+
+  async function updateEvent(eventId: string): Promise<boolean> {
+    if (!eventForm.title.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(eventForm.event_date) || !eventForm.expected_cost) {
+      setEventNotice("일정명, 날짜(YYYY-MM-DD), 예상비용을 모두 입력해 주세요.");
+      return false;
+    }
+    try {
+      setEventNotice(null);
+      await request<JobEvent>(`/events/${eventId}`, { method: "PUT", body: JSON.stringify({ title: eventForm.title.trim(), event_type: eventForm.event_type, event_date: eventForm.event_date, expected_cost: toWon(eventForm.expected_cost), memo: "" }) });
+      setEventForm({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
+      await loadDashboard();
+      return true;
+    } catch {
+      setEventNotice("일정을 수정하지 못했어요. 입력값을 다시 확인해 주세요.");
+      return false;
+    }
+  }
+
+  async function deleteEvent(eventId: string): Promise<boolean> {
+    try {
+      setEventNotice(null);
+      await request<void>(`/events/${eventId}`, { method: "DELETE" });
+      setEventForm({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
+      await loadDashboard();
+      return true;
+    } catch {
+      setEventNotice("일정을 삭제하지 못했어요. 다시 시도해 주세요.");
+      return false;
     }
   }
 
@@ -256,6 +291,8 @@ function App() {
     eventForm,
     setEventForm,
     addEvent,
+    updateEvent,
+    deleteEvent,
     runScenario,
     scenario,
     recordForm,
