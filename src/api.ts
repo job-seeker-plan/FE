@@ -31,7 +31,10 @@ export async function request<T>(path: string, options?: RequestInit): Promise<T
     headers: { "Content-Type": "application/json", ...authHeaders(), ...options?.headers },
     ...options
   });
-  if (!response.ok) throw new Error(`${path} failed: ${response.status}`);
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`${path} failed: ${response.status}${detail ? ` - ${detail}` : ""}`);
+  }
   if (response.status === 204) return undefined as T;
   return response.json();
 }
