@@ -66,6 +66,7 @@ function App() {
   const [confirmedSupport, setConfirmedSupport] = useState({ month: "", amount: "" });
   const [scenario, setScenario] = useState<PlanAnalysis | null>(null);
   const [profileNotice, setProfileNotice] = useState<string | null>(null);
+  const [settingsNotice, setSettingsNotice] = useState<string | null>(null);
   const [eventNotice, setEventNotice] = useState<string | null>(null);
   const [recordNotice, setRecordNotice] = useState<string | null>(null);
 
@@ -178,26 +179,41 @@ function App() {
     setScenario(nextScenario);
   }
 
+  async function submitProfile(form: ProfileForm) {
+    await request<UserProfile>("/profile", {
+      method: "PUT",
+      body: JSON.stringify({
+        user_id: authUser?.user_id ?? form.user_id,
+        available_cash: Number(form.available_cash),
+        monthly_income: Number(form.monthly_income),
+        age: Number(form.age),
+        region: form.region,
+        employment_status: profile?.employment_status ?? "unemployed",
+        monthly_income_for_policy: Number(form.monthly_income_for_policy),
+        target_job_month: form.target_job_month
+      })
+    });
+  }
+
   async function saveProfile() {
     try {
       setProfileNotice(null);
-      await request<UserProfile>("/profile", {
-        method: "PUT",
-        body: JSON.stringify({
-          user_id: authUser?.user_id ?? profileForm.user_id,
-          available_cash: Number(profileForm.available_cash),
-          monthly_income: Number(profileForm.monthly_income),
-          age: Number(profileForm.age),
-          region: profileForm.region,
-          employment_status: "unemployed",
-          monthly_income_for_policy: Number(profileForm.monthly_income_for_policy),
-          target_job_month: profileForm.target_job_month
-        })
-      });
+      await submitProfile(profileForm);
       setActiveView("calendar");
       await loadDashboard();
     } catch {
       setProfileNotice("입력값을 다시 확인해 주세요.");
+    }
+  }
+
+  async function updateProfile(form: ProfileForm) {
+    try {
+      setSettingsNotice(null);
+      await submitProfile(form);
+      setSettingsNotice("저장되었습니다.");
+      await loadDashboard();
+    } catch {
+      setSettingsNotice("입력값을 다시 확인해 주세요.");
     }
   }
 
@@ -283,7 +299,7 @@ function App() {
       {activeView === "calendar" && <CalendarView {...shared} />}
       {activeView === "policies" && <PoliciesView {...shared} />}
       {activeView === "records" && <RecordsView {...shared} />}
-      {activeView === "settings" && <SettingsView profile={profile} onLogout={logout} />}
+      {activeView === "settings" && <SettingsView profile={profile} onLogout={logout} updateProfile={updateProfile} updateNotice={settingsNotice} />}
     </AppFrame>
   );
 }
