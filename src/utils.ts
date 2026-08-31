@@ -35,6 +35,16 @@ export function buildCalendarDays(monthValue: string, events: JobEvent[]) {
   });
 }
 
+export function extractPolicyDeadline(period: string) {
+  const matches = [...period.matchAll(/(20\d{2})\s*(?:[-./년]\s*)(\d{1,2})\s*(?:[-./월]\s*)(\d{1,2})\s*일?/g)];
+  const compactMatches = [...period.matchAll(/(20\d{2})(\d{2})(\d{2})/g)];
+  const dates = [
+    ...matches.map((match) => [match[1], match[2], match[3]]),
+    ...compactMatches.map((match) => [match[1], match[2], match[3]])
+  ].map(([year, month, day]) => year + "-" + month.padStart(2, "0") + "-" + day.padStart(2, "0"));
+  return dates[dates.length - 1] ?? null;
+}
+
 export function buildFinanceCalendarDays(monthValue: string, transactions: FinanceTransaction[]) {
   const [year, month] = monthValue.split("-").map(Number);
   const first = new Date(year, month - 1, 1);
