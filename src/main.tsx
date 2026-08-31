@@ -4,7 +4,7 @@ import { AlertTriangle } from "lucide-react";
 import "./styles.css";
 
 import { clearAuthToken, optionalRequest, request } from "./api";
-import { currentMonthValue, toWon } from "./utils";
+import { currentMonthValue, extractPolicyDeadline, toWon } from "./utils";
 import { viewTitle } from "./viewTitle";
 import type {
   AuthProvider,
@@ -66,6 +66,7 @@ function App() {
     income: ""
   });
   const [selectedPolicyIds, setSelectedPolicyIds] = useState<string[]>([]);
+  const [confirmedPolicyIds, setConfirmedPolicyIds] = useState<string[]>([]);
   const [confirmedSupport, setConfirmedSupport] = useState({ month: "", amount: "" });
   const [scenario, setScenario] = useState<PlanAnalysis | null>(null);
   const [profileNotice, setProfileNotice] = useState<string | null>(null);
@@ -73,6 +74,7 @@ function App() {
   const [eventNotice, setEventNotice] = useState<string | null>(null);
   const [transactionNotice, setTransactionNotice] = useState<string | null>(null);
   const [recordNotice, setRecordNotice] = useState<string | null>(null);
+  const [policyNotice, setPolicyNotice] = useState<string | null>(null);
 
   async function loadDashboard() {
     try {
@@ -186,6 +188,45 @@ function App() {
   function cancelEdit() {
     setEventForm({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
     setEventNotice(null);
+  }
+
+  async function confirmSelectedPolicies() {
+    const selectedPolicies = policies.filter((policy) => selectedPolicyIds.includes(policy.id));
+    if (selectedPolicies.length === 0) {
+      setPolicyNotice("먼저 확정할 정책을 선택해 주세요.");
+      return;
+    }
+
+    const existingPolicyIds = new Set(
+      events.map((event) => event.memo.match(/^policy:(.+)$/)?.[1]).filter(Boolean)
+    );
+    const datedPolicies = selectedPolicies.filter((policy) => extractPolicyDeadline(policy.application_period));
+    const undatedPolicies = selectedPolicies.filter((policy) => !extractPolicyDeadline(policy.application_period));
+    const newPolicies = datedPolicies.filter((policy) => !existingPolicyIds.has(policy.id));
+
+    try {
+      const createdEvents = await Promise.all(newPolicies.map((policy) => request<JobEvent>("/events", {
+        method: "POST",
+        body: JSON.stringify({
+          title: policy.name + " 마감",
+          event_type: "document_deadline",
+          event_date: extractPolicyDeadline(policy.application_period),
+          expected_cost: 0,
+          memo: "policy:" + policy.id
+        })
+      })));
+      if (createdEvents.length > 0) {
+        setEvents((current) => [...current, ...createdEvents].sort((left, right) => left.event_date.localeCompare(right.event_date)));
+      }
+      setConfirmedPolicyIds((current) => [...new Set([...current, ...selectedPolicies.map((policy) => policy.id)])]);
+      setPolicyNotice(selectedPolicies.length + "개 정책을 확정했습니다. " + createdEvents.length + "개 마감일을 캘린더에 추가했습니다.");
+      if (undatedPolicies.length > 0 && window.confirm("마감일이 확인되지 않은 정책 " + undatedPolicies.length + "개가 있습니다. 직접 캘린더에 등록하시겠습니까?")) {
+        setEventForm({ title: "", event_type: "document_deadline", event_date: "", expected_cost: "" });
+        setActiveView("calendar");
+      }
+    } catch {
+      setPolicyNotice("정책 마감일을 캘린더에 등록하지 못했어요.");
+    }
   }
 
   async function addTransaction() {
@@ -349,6 +390,9 @@ function App() {
     policies,
     selectedPolicyIds,
     setSelectedPolicyIds,
+    confirmedPolicyIds,
+    confirmSelectedPolicies,
+    policyNotice,
     confirmedSupport,
     setConfirmedSupport,
     eventForm,

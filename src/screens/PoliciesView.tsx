@@ -5,10 +5,16 @@ import { Panel } from "../components/Panel";
 import { PolicyPanel } from "../components/PolicyPanel";
 import { YearMonthSelect } from "../components/YearMonthSelect";
 
-export function PoliciesView({ policies, selectedPolicyIds, setSelectedPolicyIds, confirmedSupport, setConfirmedSupport, scenario }: { policies: MatchedPolicy[]; selectedPolicyIds: string[]; setSelectedPolicyIds: React.Dispatch<React.SetStateAction<string[]>>; confirmedSupport: { month: string; amount: string }; setConfirmedSupport: React.Dispatch<React.SetStateAction<{ month: string; amount: string }>>; scenario: PlanAnalysis | null }) {
+export function PoliciesView({ policies, selectedPolicyIds, setSelectedPolicyIds, confirmedPolicyIds, confirmSelectedPolicies, policyNotice, confirmedSupport, setConfirmedSupport, scenario }: { policies: MatchedPolicy[]; selectedPolicyIds: string[]; setSelectedPolicyIds: React.Dispatch<React.SetStateAction<string[]>>; confirmedPolicyIds: string[]; confirmSelectedPolicies: () => Promise<void>; policyNotice?: string | null; confirmedSupport: { month: string; amount: string }; setConfirmedSupport: React.Dispatch<React.SetStateAction<{ month: string; amount: string }>>; scenario: PlanAnalysis | null }) {
   return (
     <section className="dashboard-grid">
       <PolicyPanel policies={policies} selectedPolicyIds={selectedPolicyIds} setSelectedPolicyIds={setSelectedPolicyIds} />
+      <Panel title="선택 정책 확정">
+        <p className="muted">마감일이 있는 정책은 자동으로 취업 캘린더에 등록됩니다.</p>
+        <button onClick={() => void confirmSelectedPolicies()}>선택 정책 확정</button>
+        {confirmedPolicyIds.length > 0 && <p className="success-text">확정된 정책 {confirmedPolicyIds.length}개</p>}
+        {policyNotice && <p className="muted">{policyNotice}</p>}
+      </Panel>
       <Panel title="정책 적용 효과">
         <p className="muted">정책 공고의 지원 내용을 자동으로 금액으로 추정하지 않습니다. 지급이 확정된 금액만 입력하세요.</p>
         <div className="form-row">

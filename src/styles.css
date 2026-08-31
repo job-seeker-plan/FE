@@ -496,6 +496,12 @@ button.preset {
   color: #64748b;
 }
 
+.success-text {
+  color: #15803d;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .metric strong {
   font-size: clamp(18px, 1.6vw, 22px);
   line-height: 1.15;
