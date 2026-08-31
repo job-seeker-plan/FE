@@ -10,12 +10,14 @@ import type {
   AuthProvider,
   AuthUser,
   EventForm,
+  FinanceTransaction,
   FinancialRecord,
   JobEvent,
   MatchedPolicy,
   PlanAnalysis,
   ProfileForm,
   RecordForm,
+  TransactionForm,
   UserProfile,
   ViewKey
 } from "./types";
@@ -40,11 +42,13 @@ function App() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [plan, setPlan] = useState<PlanAnalysis | null>(null);
   const [events, setEvents] = useState<JobEvent[]>([]);
+  const [financeTransactions, setFinanceTransactions] = useState<FinanceTransaction[]>([]);
   const [financialRecords, setFinancialRecords] = useState<FinancialRecord[]>([]);
   const [policies, setPolicies] = useState<MatchedPolicy[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(currentMonthValue());
   const [eventForm, setEventForm] = useState<EventForm>({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
+  const [transactionForm, setTransactionForm] = useState<TransactionForm>({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "" });
   const [profileForm, setProfileForm] = useState<ProfileForm>({
     user_id: "",
     available_cash: "",
@@ -67,6 +71,7 @@ function App() {
   const [profileNotice, setProfileNotice] = useState<string | null>(null);
   const [settingsNotice, setSettingsNotice] = useState<string | null>(null);
   const [eventNotice, setEventNotice] = useState<string | null>(null);
+  const [transactionNotice, setTransactionNotice] = useState<string | null>(null);
   const [recordNotice, setRecordNotice] = useState<string | null>(null);
 
   async function loadDashboard() {
@@ -77,18 +82,21 @@ function App() {
       if (!nextProfile) {
         setPlan(null);
         setEvents([]);
+        setFinanceTransactions([]);
         setFinancialRecords([]);
         setPolicies([]);
         return;
       }
-      const [nextPlan, nextEvents, nextRecords, nextPolicies] = await Promise.all([
+      const [nextPlan, nextEvents, nextTransactions, nextRecords, nextPolicies] = await Promise.all([
         optionalRequest<PlanAnalysis>("/plan"),
         optionalRequest<JobEvent[]>("/events"),
+        optionalRequest<FinanceTransaction[]>("/transactions"),
         optionalRequest<FinancialRecord[]>("/financial-records"),
         optionalRequest<MatchedPolicy[]>("/policies/matches")
       ]);
       setPlan(nextPlan);
       setEvents(nextEvents ?? []);
+      setFinanceTransactions(nextTransactions ?? []);
       setFinancialRecords(nextRecords ?? []);
       setPolicies(nextPolicies ?? []);
     } catch (nextError) {
@@ -178,6 +186,53 @@ function App() {
   function cancelEdit() {
     setEventForm({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
     setEventNotice(null);
+  }
+
+  async function addTransaction() {
+    if (!transactionForm.occurred_on || !transactionForm.category || !transactionForm.amount) return;
+    try {
+      setTransactionNotice(null);
+      const saved = await request<FinanceTransaction>("/transactions", {
+        method: "POST",
+        body: JSON.stringify({ ...transactionForm, amount: toWon(transactionForm.amount), memo: transactionForm.memo || "" })
+      });
+      setFinanceTransactions((current) => [...current, saved].sort((left, right) => left.occurred_on.localeCompare(right.occurred_on)));
+      setTransactionForm({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "" });
+    } catch {
+      setTransactionNotice("가계부 내역을 저장하지 못했어요. 입력값을 다시 확인해 주세요.");
+    }
+  }
+
+  async function updateTransaction() {
+    if (!transactionForm.id || !transactionForm.occurred_on || !transactionForm.category || !transactionForm.amount) return;
+    try {
+      setTransactionNotice(null);
+      const updated = await request<FinanceTransaction>(`/transactions/${transactionForm.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ occurred_on: transactionForm.occurred_on, type: transactionForm.type, category: transactionForm.category, amount: toWon(transactionForm.amount), memo: transactionForm.memo || "" })
+      });
+      setFinanceTransactions((current) => current.map((transaction) => transaction.id === updated.id ? updated : transaction).sort((left, right) => left.occurred_on.localeCompare(right.occurred_on)));
+      setTransactionForm({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "" });
+    } catch {
+      setTransactionNotice("가계부 내역을 수정하지 못했어요. 입력값을 다시 확인해 주세요.");
+    }
+  }
+
+  async function deleteTransaction(transactionId = transactionForm.id) {
+    if (!transactionId || !window.confirm("이 가계부 내역을 삭제할까요?")) return;
+    try {
+      setTransactionNotice(null);
+      await request<void>(`/transactions/${transactionId}`, { method: "DELETE" });
+      setFinanceTransactions((current) => current.filter((transaction) => transaction.id !== transactionId));
+      setTransactionForm({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "" });
+    } catch {
+      setTransactionNotice("가계부 내역을 삭제하지 못했어요.");
+    }
+  }
+
+  function cancelTransactionEdit() {
+    setTransactionForm({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "" });
+    setTransactionNotice(null);
   }
 
   async function saveFinancialRecord() {
@@ -289,6 +344,7 @@ function App() {
   const shared = {
     profile,
     events,
+    financeTransactions,
     financialRecords,
     policies,
     selectedPolicyIds,
@@ -302,6 +358,14 @@ function App() {
     deleteEvent,
     cancelEdit,
     editingEventId: eventForm.id ?? null,
+    transactionForm,
+    setTransactionForm,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    cancelTransactionEdit,
+    editingTransactionId: transactionForm.id ?? null,
+    transactionNotice,
     runScenario,
     scenario,
     recordForm,

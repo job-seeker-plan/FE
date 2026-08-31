@@ -43,6 +43,17 @@ export type FinancialRecord = {
   income: number;
 };
 
+export type FinanceTransactionType = "income" | "expense";
+
+export type FinanceTransaction = {
+  id: string;
+  occurred_on: string;
+  type: FinanceTransactionType;
+  category: string;
+  amount: number;
+  memo: string;
+};
+
 export type MatchedPolicy = {
   id: string;
   name: string;
@@ -103,4 +114,13 @@ export type RecordForm = {
   bill: string;
   balance: string;
   income: string;
+};
+
+export type TransactionForm = {
+  id?: string;
+  occurred_on: string;
+  type: FinanceTransactionType;
+  category: string;
+  amount: string;
+  memo: string;
 };
