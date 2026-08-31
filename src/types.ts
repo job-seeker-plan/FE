@@ -80,6 +80,7 @@ export type PlanAnalysis = {
 };
 
 export type EventForm = {
+  id?: string;
   title: string;
   event_type: string;
   event_date: string;

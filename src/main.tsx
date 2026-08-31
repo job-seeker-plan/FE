@@ -138,6 +138,38 @@ function App() {
     }
   }
 
+  async function updateEvent() {
+    if (!eventForm.id || !eventForm.title || !eventForm.event_date || !eventForm.expected_cost) return;
+    try {
+      setEventNotice(null);
+      await request<JobEvent>(`/events/${eventForm.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ title: eventForm.title, event_type: eventForm.event_type, event_date: eventForm.event_date, expected_cost: toWon(eventForm.expected_cost), memo: "" })
+      });
+      setEventForm({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
+      await loadDashboard();
+    } catch {
+      setEventNotice("일정을 수정하지 못했어요. 입력값을 다시 확인해 주세요.");
+    }
+  }
+
+  async function deleteEvent(eventId = eventForm.id) {
+    if (!eventId || !window.confirm("이 일정을 삭제할까요?")) return;
+    try {
+      setEventNotice(null);
+      await request<void>(`/events/${eventId}`, { method: "DELETE" });
+      setEventForm({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
+      await loadDashboard();
+    } catch {
+      setEventNotice("일정을 삭제하지 못했어요.");
+    }
+  }
+
+  function cancelEdit() {
+    setEventForm({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
+    setEventNotice(null);
+  }
+
   async function saveFinancialRecord() {
     if (!recordForm.month || !recordForm.spend || !recordForm.bill || !recordForm.balance) return;
     try {
@@ -256,6 +288,10 @@ function App() {
     eventForm,
     setEventForm,
     addEvent,
+    updateEvent,
+    deleteEvent,
+    cancelEdit,
+    editingEventId: eventForm.id ?? null,
     runScenario,
     scenario,
     recordForm,
