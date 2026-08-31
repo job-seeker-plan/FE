@@ -1,76 +1,148 @@
 import React, { useState } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { CalendarPlus, ChevronLeft, ChevronRight, Pencil, Trash2, X } from "lucide-react";
 import type { EventForm, JobEvent } from "../types";
-import { buildCalendarDays, formatWon } from "../utils";
-import { CompactList } from "../components/CompactList";
+import { buildCalendarDays } from "../utils";
 import { EventFormPanel } from "../components/EventFormPanel";
 import { Panel } from "../components/Panel";
 import { eventTypeLabels } from "../constants";
+import { formatWon } from "../utils";
 
-export function CalendarView({ events, eventForm, setEventForm, addEvent, updateEvent, deleteEvent, runScenario, calendarMonth, setCalendarMonth, monthlyEventCost, eventNotice }: { events: JobEvent[]; eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<boolean>; updateEvent: (eventId: string) => Promise<boolean>; deleteEvent: (eventId: string) => Promise<boolean>; runScenario: () => Promise<void>; calendarMonth: string; setCalendarMonth: React.Dispatch<React.SetStateAction<string>>; monthlyEventCost: Array<[string, number]>; eventNotice?: string | null }) {
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
-  const [editingEventId, setEditingEventId] = useState<string | null>(null);
+export function CalendarView({ events, eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, runScenario, editingEventId, calendarMonth, setCalendarMonth, monthlyEventCost, eventNotice }: { events: JobEvent[]; eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: (eventId?: string) => Promise<void>; cancelEdit: () => void; runScenario: () => Promise<void>; editingEventId: string | null; calendarMonth: string; setCalendarMonth: React.Dispatch<React.SetStateAction<string>>; monthlyEventCost: Array<[string, number]>; eventNotice?: string | null }) {
   const calendarDays = buildCalendarDays(calendarMonth, events);
   const monthCost = monthlyEventCost.find(([month]) => month === calendarMonth)?.[1] ?? 0;
+  const [selectedEvent, setSelectedEvent] = useState<JobEvent | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [newEventModalOpen, setNewEventModalOpen] = useState(false);
 
-  function moveMonth(offset: number) {
+  function openEvent(event: JobEvent) {
+    setSelectedEvent(event);
+  }
+
+  function shiftMonth(offset: number) {
     const [year, month] = calendarMonth.split("-").map(Number);
     const next = new Date(year, month - 1 + offset, 1);
     setCalendarMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`);
   }
 
-  function selectDate(date: string) {
-    setEditingEventId(null);
-    setEventForm({ title: "", event_type: "interview", event_date: date, expected_cost: "" });
-    setCalendarMonth(date.slice(0, 7));
-    setIsEventModalOpen(true);
+  function openNewEvent(date?: string) {
+    setEventForm({ title: "", event_type: "interview", event_date: date ?? "", expected_cost: "" });
+    setSelectedEvent(null);
+    setSelectedDate(null);
+    setNewEventModalOpen(true);
   }
 
-  function selectExistingEvent(event: JobEvent) {
-    setEditingEventId(event.id);
-    setEventForm({ title: event.title, event_type: event.event_type, event_date: event.event_date, expected_cost: String(Math.round(event.expected_cost / 10_000)) });
-    setCalendarMonth(event.event_date.slice(0, 7));
-    setIsEventModalOpen(true);
+  function startEditing(event: JobEvent) {
+    setEventForm({ title: event.title, event_type: event.event_type, event_date: event.event_date, expected_cost: String(Math.round(event.expected_cost / 10_000)), id: event.id });
+    setSelectedEvent(null);
+    setSelectedDate(null);
+    setNewEventModalOpen(true);
   }
 
-  async function saveModalEvent(): Promise<boolean> {
-    const saved = editingEventId ? await updateEvent(editingEventId) : await addEvent();
-    if (saved) {
-      setEditingEventId(null);
-      setIsEventModalOpen(false);
-    }
-    return saved;
+  async function removeSelectedEvent() {
+    if (!selectedEvent) return;
+    setEventForm({ title: selectedEvent.title, event_type: selectedEvent.event_type, event_date: selectedEvent.event_date, expected_cost: String(Math.round(selectedEvent.expected_cost / 10_000)), id: selectedEvent.id });
+    await deleteEvent(selectedEvent.id);
+    setSelectedEvent(null);
   }
 
-  async function saveSideEvent(): Promise<boolean> {
-    const saved = editingEventId ? await updateEvent(editingEventId) : await addEvent();
-    if (saved) setEditingEventId(null);
-    return saved;
-  }
-
-  async function removeEvent(): Promise<boolean> {
-    if (editingEventId && await deleteEvent(editingEventId)) {
-      setEditingEventId(null);
-      setIsEventModalOpen(false);
-      return true;
-    }
-    return false;
-  }
-
-  async function removeSideEvent(): Promise<boolean> {
-    if (!editingEventId) return false;
-    const deleted = await deleteEvent(editingEventId);
-    if (deleted) setEditingEventId(null);
-    return deleted;
-  }
-
-  return <section className="calendar-layout">
-    <Panel title="월간 취업 일정">
-      <div className="calendar-toolbar"><button type="button" className="calendar-month-button" onClick={() => moveMonth(-1)} aria-label="이전 달"><ChevronLeft size={22} /></button><strong className="calendar-month-title">{calendarMonth.slice(0, 4)}년 {Number(calendarMonth.slice(5, 7))}월</strong><button type="button" className="calendar-month-button" onClick={() => moveMonth(1)} aria-label="다음 달"><ChevronRight size={22} /></button><span className="calendar-month-cost">예상 취준비 {formatWon(monthCost)}</span></div>
-      <div className="weekday-row">{["일", "월", "화", "수", "목", "금", "토"].map((day) => <span key={day}>{day}</span>)}</div>
-      <div className="calendar-grid">{calendarDays.map((day) => <button className={`calendar-cell ${day.inMonth ? "" : "muted-cell"}`} key={day.key} onClick={() => selectDate(day.key)} aria-label={`${day.key} 일정 등록`}><span className="day-number">{day.day}</span><div className="calendar-events">{day.events.map((event) => <span className="event-chip" key={event.id} onClick={(click) => { click.stopPropagation(); selectExistingEvent(event); }}>{event.title}</span>)}</div></button>)}</div>
-    </Panel>
-    <section className="side-stack"><EventFormPanel eventForm={eventForm} setEventForm={setEventForm} addEvent={saveSideEvent} deleteEvent={removeSideEvent} isEditing={Boolean(editingEventId)} runScenario={runScenario} notice={eventNotice} onDateChange={(date) => { if (date) setCalendarMonth(date.slice(0, 7)); }} /><CompactList title="일정 목록" onItemClick={(id) => { const event = events.find((item) => item.id === id); if (event) selectExistingEvent(event); }} items={events.map((event) => ({ key: event.id, title: event.title, meta: `${event.event_date} · ${eventTypeLabels[event.event_type]}`, value: formatWon(event.expected_cost) }))} /></section>
-    {isEventModalOpen && <div className="event-modal-backdrop" onClick={() => setIsEventModalOpen(false)}><div className="event-modal" role="dialog" aria-modal="true" aria-label="일정 등록" onClick={(event) => event.stopPropagation()}><div className="event-modal-header"><div><p className="eyebrow">CALENDAR EVENT</p><h2>{editingEventId ? "일정 수정" : "일정 등록"}</h2></div><button type="button" className="icon-button" onClick={() => setIsEventModalOpen(false)} aria-label="닫기"><X size={20} /></button></div><EventFormPanel eventForm={eventForm} setEventForm={setEventForm} addEvent={() => saveModalEvent()} deleteEvent={removeEvent} isEditing={Boolean(editingEventId)} runScenario={runScenario} notice={eventNotice} onDateChange={(date) => { if (date) setCalendarMonth(date.slice(0, 7)); }} /></div></div>}
-  </section>;
+  return (
+    <>
+      <section className="calendar-layout">
+      <Panel title="월간 취업 일정">
+        <div className="calendar-toolbar">
+          <button className="icon-button calendar-nav-button" aria-label="이전 달" onClick={() => shiftMonth(-1)}><ChevronLeft size={20} /></button>
+          <strong className="calendar-month-title">{calendarMonth.replace("-", "년 ")}월</strong>
+          <button className="icon-button calendar-nav-button" aria-label="다음 달" onClick={() => shiftMonth(1)}><ChevronRight size={20} /></button>
+          <span className="calendar-month-cost">예상 취준비 {formatWon(monthCost)}</span>
+        </div>
+        <div className="weekday-row">
+          {["일", "월", "화", "수", "목", "금", "토"].map((day) => <span key={day}>{day}</span>)}
+        </div>
+        <div className="calendar-grid">
+          {calendarDays.map((day) => (
+            <div className={`calendar-cell ${day.inMonth ? "" : "muted-cell"}`} key={day.key} onClick={() => setSelectedDate(day.key)}>
+              <span className="day-number">{day.day}</span>
+              <div className="calendar-events">
+                {day.events.slice(0, 3).map((event) => (
+                  <button className="event-chip" key={event.id} onClick={(clickEvent) => { clickEvent.stopPropagation(); openEvent(event); }}>
+                    {event.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Panel>
+      <section className="side-stack">
+        <EventFormPanel eventForm={eventForm} setEventForm={setEventForm} addEvent={addEvent} updateEvent={updateEvent} deleteEvent={deleteEvent} cancelEdit={cancelEdit} runScenario={runScenario} editing={Boolean(editingEventId)} notice={eventNotice} />
+        <Panel title="일정 목록">
+          <div className="item-list">
+            {events.length === 0 && <p className="muted">등록된 항목이 없습니다.</p>}
+            {events.map((event) => (
+              <button className={`item event-list-item ${editingEventId === event.id ? "selected-item" : ""}`} key={event.id} onClick={() => openEvent(event)}>
+                <span><strong>{event.title}</strong><span>{event.event_date} · {eventTypeLabels[event.event_type]}</span></span>
+                <b>{formatWon(event.expected_cost)}</b>
+              </button>
+            ))}
+          </div>
+        </Panel>
+      </section>
+      </section>
+      {selectedDate && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSelectedDate(null)}>
+          <section className="date-events-modal" role="dialog" aria-modal="true" aria-labelledby="date-events-title">
+            <div className="modal-header">
+              <div><span className="eyebrow">일정 관리</span><h2 id="date-events-title">{selectedDate}</h2></div>
+              <button className="icon-button" aria-label="닫기" onClick={() => setSelectedDate(null)}><X size={18} /></button>
+            </div>
+            <div className="day-event-list">
+              {events.filter((event) => event.event_date === selectedDate).length === 0 && <p className="muted">등록된 일정이 없습니다.</p>}
+              {events.filter((event) => event.event_date === selectedDate).map((event) => (
+                <div className="day-event-row" key={event.id}>
+                  <div><strong>{event.title}</strong><span>{eventTypeLabels[event.event_type]} · {formatWon(event.expected_cost)}</span></div>
+                  <div className="compact-actions">
+                    <button className="icon-button" aria-label={`${event.title} 수정`} onClick={() => startEditing(event)}><Pencil size={16} /></button>
+                    <button className="icon-button danger-icon" aria-label={`${event.title} 삭제`} onClick={() => void deleteEvent(event.id)}><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="button-row modal-actions">
+              <button onClick={() => openNewEvent(selectedDate)}><CalendarPlus size={16} />이 날짜에 일정 추가</button>
+              <button className="secondary" onClick={() => setSelectedDate(null)}>닫기</button>
+            </div>
+          </section>
+        </div>
+      )}
+      {newEventModalOpen && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && (cancelEdit(), setNewEventModalOpen(false))}>
+          <div className="form-modal"><EventFormPanel eventForm={eventForm} setEventForm={setEventForm} addEvent={async () => { await addEvent(); setNewEventModalOpen(false); }} updateEvent={updateEvent} deleteEvent={deleteEvent} cancelEdit={() => { cancelEdit(); setNewEventModalOpen(false); }} runScenario={runScenario} editing={Boolean(editingEventId)} notice={eventNotice} /></div>
+        </div>
+      )}
+      {selectedEvent && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSelectedEvent(null)}>
+          <section className="event-modal" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
+            <div className="modal-header">
+              <div>
+                <span className="eyebrow">일정 상세</span>
+                <h2 id="event-modal-title">{selectedEvent.title}</h2>
+              </div>
+              <button className="icon-button" aria-label="닫기" onClick={() => setSelectedEvent(null)}><X size={18} /></button>
+            </div>
+            <div className="event-detail-grid">
+              <span>일정 유형<strong>{eventTypeLabels[selectedEvent.event_type]}</strong></span>
+              <span>일정 날짜<strong>{selectedEvent.event_date}</strong></span>
+              <span>예상 비용<strong>{formatWon(selectedEvent.expected_cost)}</strong></span>
+              {selectedEvent.memo && <span>메모<strong>{selectedEvent.memo}</strong></span>}
+            </div>
+            <div className="button-row modal-actions">
+              <button onClick={() => startEditing(selectedEvent)}><Pencil size={16} />수정</button>
+              <button className="danger" onClick={() => void removeSelectedEvent()}><Trash2 size={16} />삭제</button>
+              <button className="secondary" onClick={() => setSelectedEvent(null)}>닫기</button>
+            </div>
+          </section>
+        </div>
+      )}
+    </>
+  );
 }
