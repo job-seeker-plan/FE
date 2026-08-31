@@ -1,146 +1,123 @@
 import React, { useState } from "react";
-import { CalendarPlus, ChevronLeft, ChevronRight, Pencil, Trash2, X } from "lucide-react";
-import type { EventForm, JobEvent } from "../types";
-import { buildCalendarDays } from "../utils";
+import type { EventForm, FinanceTransaction, JobEvent, TransactionForm } from "../types";
+import { DayDetailModal } from "../components/DayDetailModal";
 import { EventFormPanel } from "../components/EventFormPanel";
-import { Panel } from "../components/Panel";
-import { eventTypeLabels } from "../constants";
-import { formatWon } from "../utils";
+import { TransactionFormPanel } from "../components/TransactionFormPanel";
+import { ScheduleCalendarView } from "./ScheduleCalendarView";
+import { FinanceCalendarView } from "./FinanceCalendarView";
 
-export function CalendarView({ events, eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, runScenario, editingEventId, calendarMonth, setCalendarMonth, monthlyEventCost, eventNotice }: { events: JobEvent[]; eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: (eventId?: string) => Promise<void>; cancelEdit: () => void; runScenario: () => Promise<void>; editingEventId: string | null; calendarMonth: string; setCalendarMonth: React.Dispatch<React.SetStateAction<string>>; monthlyEventCost: Array<[string, number]>; eventNotice?: string | null }) {
-  const calendarDays = buildCalendarDays(calendarMonth, events);
-  const monthCost = monthlyEventCost.find(([month]) => month === calendarMonth)?.[1] ?? 0;
-  const [selectedEvent, setSelectedEvent] = useState<JobEvent | null>(null);
+type CalendarTab = "schedule" | "finance";
+
+export function CalendarView({
+  events, eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, runScenario, editingEventId,
+  financeTransactions, transactionForm, setTransactionForm, addTransaction, updateTransaction, deleteTransaction, cancelTransactionEdit, editingTransactionId, transactionNotice,
+  calendarMonth, setCalendarMonth, monthlyEventCost, eventNotice
+}: {
+  events: JobEvent[]; eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: (eventId?: string) => Promise<void>; cancelEdit: () => void; runScenario: () => Promise<void>; editingEventId: string | null;
+  financeTransactions: FinanceTransaction[]; transactionForm: TransactionForm; setTransactionForm: React.Dispatch<React.SetStateAction<TransactionForm>>; addTransaction: () => Promise<void>; updateTransaction: () => Promise<void>; deleteTransaction: (id?: string) => Promise<void>; cancelTransactionEdit: () => void; editingTransactionId: string | null; transactionNotice?: string | null;
+  calendarMonth: string; setCalendarMonth: React.Dispatch<React.SetStateAction<string>>; monthlyEventCost: Array<[string, number]>; eventNotice?: string | null;
+}) {
+  const [calendarTab, setCalendarTab] = useState<CalendarTab>("schedule");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [newEventModalOpen, setNewEventModalOpen] = useState(false);
-
-  function openEvent(event: JobEvent) {
-    setSelectedEvent(event);
-  }
-
-  function shiftMonth(offset: number) {
-    const [year, month] = calendarMonth.split("-").map(Number);
-    const next = new Date(year, month - 1 + offset, 1);
-    setCalendarMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`);
-  }
+  const [eventFormModalOpen, setEventFormModalOpen] = useState(false);
+  const [transactionFormModalOpen, setTransactionFormModalOpen] = useState(false);
 
   function openNewEvent(date?: string) {
     setEventForm({ title: "", event_type: "interview", event_date: date ?? "", expected_cost: "" });
-    setSelectedEvent(null);
+    setEventFormModalOpen(true);
     setSelectedDate(null);
-    setNewEventModalOpen(true);
   }
 
-  function startEditing(event: JobEvent) {
+  function openEditEvent(event: JobEvent) {
     setEventForm({ title: event.title, event_type: event.event_type, event_date: event.event_date, expected_cost: String(Math.round(event.expected_cost / 10_000)), id: event.id });
-    setSelectedEvent(null);
+    setEventFormModalOpen(true);
     setSelectedDate(null);
-    setNewEventModalOpen(true);
   }
 
-  async function removeSelectedEvent() {
-    if (!selectedEvent) return;
-    setEventForm({ title: selectedEvent.title, event_type: selectedEvent.event_type, event_date: selectedEvent.event_date, expected_cost: String(Math.round(selectedEvent.expected_cost / 10_000)), id: selectedEvent.id });
-    await deleteEvent(selectedEvent.id);
-    setSelectedEvent(null);
+  function closeEventFormModal() {
+    cancelEdit();
+    setEventFormModalOpen(false);
+  }
+
+  function openNewTransaction(date?: string) {
+    setTransactionForm({ occurred_on: date ?? "", type: "expense", category: "food", amount: "", memo: "" });
+    setTransactionFormModalOpen(true);
+    setSelectedDate(null);
+  }
+
+  function openEditTransaction(transaction: FinanceTransaction) {
+    setTransactionForm({ id: transaction.id, occurred_on: transaction.occurred_on, type: transaction.type, category: transaction.category, amount: String(Math.round(transaction.amount / 10_000)), memo: transaction.memo });
+    setTransactionFormModalOpen(true);
+    setSelectedDate(null);
+  }
+
+  function closeTransactionFormModal() {
+    cancelTransactionEdit();
+    setTransactionFormModalOpen(false);
   }
 
   return (
     <>
-      <section className="calendar-layout">
-      <Panel title="월간 취업 일정">
-        <div className="calendar-toolbar">
-          <button className="icon-button calendar-nav-button" aria-label="이전 달" onClick={() => shiftMonth(-1)}><ChevronLeft size={20} /></button>
-          <strong className="calendar-month-title">{calendarMonth.replace("-", "년 ")}월</strong>
-          <button className="icon-button calendar-nav-button" aria-label="다음 달" onClick={() => shiftMonth(1)}><ChevronRight size={20} /></button>
-          <span className="calendar-month-cost">예상 취준비 {formatWon(monthCost)}</span>
-        </div>
-        <div className="weekday-row">
-          {["일", "월", "화", "수", "목", "금", "토"].map((day) => <span key={day}>{day}</span>)}
-        </div>
-        <div className="calendar-grid">
-          {calendarDays.map((day) => (
-            <div className={`calendar-cell ${day.inMonth ? "" : "muted-cell"}`} key={day.key} onClick={() => setSelectedDate(day.key)}>
-              <span className="day-number">{day.day}</span>
-              <div className="calendar-events">
-                {day.events.slice(0, 3).map((event) => (
-                  <button className="event-chip" key={event.id} onClick={(clickEvent) => { clickEvent.stopPropagation(); openEvent(event); }}>
-                    {event.title}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Panel>
-      <section className="side-stack">
-        <EventFormPanel eventForm={eventForm} setEventForm={setEventForm} addEvent={addEvent} updateEvent={updateEvent} deleteEvent={deleteEvent} cancelEdit={cancelEdit} runScenario={runScenario} editing={Boolean(editingEventId)} notice={eventNotice} />
-        <Panel title="일정 목록">
-          <div className="item-list">
-            {events.length === 0 && <p className="muted">등록된 항목이 없습니다.</p>}
-            {events.map((event) => (
-              <button className={`item event-list-item ${editingEventId === event.id ? "selected-item" : ""}`} key={event.id} onClick={() => openEvent(event)}>
-                <span><strong>{event.title}</strong><span>{event.event_date} · {eventTypeLabels[event.event_type]}</span></span>
-                <b>{formatWon(event.expected_cost)}</b>
-              </button>
-            ))}
-          </div>
-        </Panel>
-      </section>
-      </section>
+      <div className="button-row calendar-tabs">
+        <button className={calendarTab === "schedule" ? "" : "secondary"} onClick={() => setCalendarTab("schedule")}>일정 캘린더</button>
+        <button className={calendarTab === "finance" ? "" : "secondary"} onClick={() => setCalendarTab("finance")}>가계부 캘린더</button>
+      </div>
+
+      {calendarTab === "schedule" ? (
+        <ScheduleCalendarView
+          events={events} eventForm={eventForm} setEventForm={setEventForm} addEvent={addEvent} updateEvent={updateEvent} deleteEvent={deleteEvent}
+          cancelEdit={cancelEdit} runScenario={runScenario} editingEventId={editingEventId} calendarMonth={calendarMonth} setCalendarMonth={setCalendarMonth}
+          monthlyEventCost={monthlyEventCost} eventNotice={eventNotice} onDayClick={setSelectedDate} onEditEvent={openEditEvent}
+        />
+      ) : (
+        <FinanceCalendarView
+          transactions={financeTransactions} transactionForm={transactionForm} setTransactionForm={setTransactionForm} addTransaction={addTransaction}
+          updateTransaction={updateTransaction} deleteTransaction={deleteTransaction} cancelEdit={cancelTransactionEdit} editingTransactionId={editingTransactionId}
+          calendarMonth={calendarMonth} setCalendarMonth={setCalendarMonth} transactionNotice={transactionNotice} onDayClick={setSelectedDate} onEditTransaction={openEditTransaction}
+        />
+      )}
+
       {selectedDate && (
-        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSelectedDate(null)}>
-          <section className="date-events-modal" role="dialog" aria-modal="true" aria-labelledby="date-events-title">
-            <div className="modal-header">
-              <div><span className="eyebrow">일정 관리</span><h2 id="date-events-title">{selectedDate}</h2></div>
-              <button className="icon-button" aria-label="닫기" onClick={() => setSelectedDate(null)}><X size={18} /></button>
-            </div>
-            <div className="day-event-list">
-              {events.filter((event) => event.event_date === selectedDate).length === 0 && <p className="muted">등록된 일정이 없습니다.</p>}
-              {events.filter((event) => event.event_date === selectedDate).map((event) => (
-                <div className="day-event-row" key={event.id}>
-                  <div><strong>{event.title}</strong><span>{eventTypeLabels[event.event_type]} · {formatWon(event.expected_cost)}</span></div>
-                  <div className="compact-actions">
-                    <button className="icon-button" aria-label={`${event.title} 수정`} onClick={() => startEditing(event)}><Pencil size={16} /></button>
-                    <button className="icon-button danger-icon" aria-label={`${event.title} 삭제`} onClick={() => void deleteEvent(event.id)}><Trash2 size={16} /></button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="button-row modal-actions">
-              <button onClick={() => openNewEvent(selectedDate)}><CalendarPlus size={16} />이 날짜에 일정 추가</button>
-              <button className="secondary" onClick={() => setSelectedDate(null)}>닫기</button>
-            </div>
-          </section>
+        <DayDetailModal
+          date={selectedDate}
+          initialTab={calendarTab}
+          events={events.filter((event) => event.event_date === selectedDate)}
+          transactions={financeTransactions.filter((transaction) => transaction.occurred_on === selectedDate)}
+          onClose={() => setSelectedDate(null)}
+          onAddEvent={() => openNewEvent(selectedDate)}
+          onEditEvent={openEditEvent}
+          onDeleteEvent={(id) => void deleteEvent(id)}
+          onAddTransaction={() => openNewTransaction(selectedDate)}
+          onEditTransaction={openEditTransaction}
+          onDeleteTransaction={(id) => void deleteTransaction(id)}
+        />
+      )}
+
+      {eventFormModalOpen && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeEventFormModal()}>
+          <div className="form-modal">
+            <EventFormPanel
+              eventForm={eventForm} setEventForm={setEventForm}
+              addEvent={async () => { await addEvent(); setEventFormModalOpen(false); }}
+              updateEvent={async () => { await updateEvent(); setEventFormModalOpen(false); }}
+              deleteEvent={async () => { await deleteEvent(); setEventFormModalOpen(false); }}
+              cancelEdit={closeEventFormModal} runScenario={runScenario} editing={Boolean(editingEventId)} notice={eventNotice}
+            />
+          </div>
         </div>
       )}
-      {newEventModalOpen && (
-        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && (cancelEdit(), setNewEventModalOpen(false))}>
-          <div className="form-modal"><EventFormPanel eventForm={eventForm} setEventForm={setEventForm} addEvent={async () => { await addEvent(); setNewEventModalOpen(false); }} updateEvent={updateEvent} deleteEvent={deleteEvent} cancelEdit={() => { cancelEdit(); setNewEventModalOpen(false); }} runScenario={runScenario} editing={Boolean(editingEventId)} notice={eventNotice} /></div>
-        </div>
-      )}
-      {selectedEvent && (
-        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSelectedEvent(null)}>
-          <section className="event-modal" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
-            <div className="modal-header">
-              <div>
-                <span className="eyebrow">일정 상세</span>
-                <h2 id="event-modal-title">{selectedEvent.title}</h2>
-              </div>
-              <button className="icon-button" aria-label="닫기" onClick={() => setSelectedEvent(null)}><X size={18} /></button>
-            </div>
-            <div className="event-detail-grid">
-              <span>일정 유형<strong>{eventTypeLabels[selectedEvent.event_type]}</strong></span>
-              <span>일정 날짜<strong>{selectedEvent.event_date}</strong></span>
-              <span>예상 비용<strong>{formatWon(selectedEvent.expected_cost)}</strong></span>
-              {selectedEvent.memo && <span>메모<strong>{selectedEvent.memo}</strong></span>}
-            </div>
-            <div className="button-row modal-actions">
-              <button onClick={() => startEditing(selectedEvent)}><Pencil size={16} />수정</button>
-              <button className="danger" onClick={() => void removeSelectedEvent()}><Trash2 size={16} />삭제</button>
-              <button className="secondary" onClick={() => setSelectedEvent(null)}>닫기</button>
-            </div>
-          </section>
+
+      {transactionFormModalOpen && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeTransactionFormModal()}>
+          <div className="form-modal">
+            <TransactionFormPanel
+              transactionForm={transactionForm} setTransactionForm={setTransactionForm}
+              addTransaction={async () => { await addTransaction(); setTransactionFormModalOpen(false); }}
+              updateTransaction={async () => { await updateTransaction(); setTransactionFormModalOpen(false); }}
+              deleteTransaction={async () => { await deleteTransaction(); setTransactionFormModalOpen(false); }}
+              cancelEdit={closeTransactionFormModal} editing={Boolean(editingTransactionId)} notice={transactionNotice}
+            />
+          </div>
         </div>
       )}
     </>

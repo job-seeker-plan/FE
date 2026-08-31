@@ -13,6 +13,22 @@ export const eventTypeLabels: Record<string, string> = {
   other: "기타"
 };
 
+export const expenseCategoryLabels: Record<string, string> = {
+  food: "식비",
+  transport: "교통",
+  housing: "주거",
+  communication: "통신",
+  shopping: "쇼핑",
+  other: "기타"
+};
+
+export const incomeCategoryLabels: Record<string, string> = {
+  salary: "급여",
+  allowance: "용돈",
+  support: "지원금",
+  other: "기타"
+};
+
 export const regions = ["서울", "경기", "인천", "부산", "대구", "광주", "대전", "울산", "세종", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
 
 export const navItems: Array<{ key: ViewKey; label: string; icon: React.ReactNode }> = [
