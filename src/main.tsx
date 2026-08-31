@@ -127,12 +127,13 @@ function App() {
     if (!eventForm.title || !eventForm.event_date || !eventForm.expected_cost) return;
     try {
       setEventNotice(null);
-      await request<JobEvent>("/events", {
+      const savedEvent = await request<JobEvent>("/events", {
         method: "POST",
         body: JSON.stringify({ ...eventForm, expected_cost: toWon(eventForm.expected_cost), memo: "" })
       });
+      setEvents((current) => [...current, savedEvent].sort((left, right) => left.event_date.localeCompare(right.event_date)));
       setEventForm({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
-      await loadDashboard();
+      void refreshPlan();
     } catch {
       setEventNotice("일정을 저장하지 못했어요. 입력값을 다시 확인해 주세요.");
     }
@@ -142,12 +143,13 @@ function App() {
     if (!eventForm.id || !eventForm.title || !eventForm.event_date || !eventForm.expected_cost) return;
     try {
       setEventNotice(null);
-      await request<JobEvent>(`/events/${eventForm.id}`, {
+      const updatedEvent = await request<JobEvent>(`/events/${eventForm.id}`, {
         method: "PUT",
         body: JSON.stringify({ title: eventForm.title, event_type: eventForm.event_type, event_date: eventForm.event_date, expected_cost: toWon(eventForm.expected_cost), memo: "" })
       });
+      setEvents((current) => current.map((event) => event.id === updatedEvent.id ? updatedEvent : event).sort((left, right) => left.event_date.localeCompare(right.event_date)));
       setEventForm({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
-      await loadDashboard();
+      void refreshPlan();
     } catch {
       setEventNotice("일정을 수정하지 못했어요. 입력값을 다시 확인해 주세요.");
     }
@@ -158,11 +160,19 @@ function App() {
     try {
       setEventNotice(null);
       await request<void>(`/events/${eventId}`, { method: "DELETE" });
+      // The DELETE has succeeded, so update the calendar immediately instead
+      // of waiting for the slower dashboard-wide refresh to finish.
+      setEvents((current) => current.filter((event) => event.id !== eventId));
       setEventForm({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
-      await loadDashboard();
+      void refreshPlan();
     } catch {
       setEventNotice("일정을 삭제하지 못했어요.");
     }
+  }
+
+  async function refreshPlan() {
+    const nextPlan = await optionalRequest<PlanAnalysis>("/plan");
+    if (nextPlan) setPlan(nextPlan);
   }
 
   function cancelEdit() {
