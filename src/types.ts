@@ -1,4 +1,4 @@
-export type ViewKey = "dashboard" | "calendar" | "policies" | "records" | "settings";
+export type ViewKey = "jobs" | "calendar" | "policies" | "records" | "settings";
 export type Status = "stable" | "caution" | "risk";
 
 export type AuthUser = {
@@ -114,6 +114,16 @@ export type RecordForm = {
   bill: string;
   balance: string;
   income: string;
+};
+
+export type JobFilter = {
+  jobMajorCategory: string;
+  jobMinorCategory: string;
+  regions: string[];
+  career: string;
+  education: string;
+  employmentType: string;
+  minSalary: string;
 };
 
 export type TransactionForm = {

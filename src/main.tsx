@@ -23,12 +23,9 @@ import type {
 } from "./types";
 
 import { AppFrame } from "./components/AppFrame";
-import { FinancialRecordPanel } from "./components/FinancialRecordPanel";
-import { Panel } from "./components/Panel";
-import { ProfilePanel } from "./components/ProfilePanel";
 import { LoginScreen } from "./screens/LoginScreen";
 import { Onboarding } from "./screens/Onboarding";
-import { DashboardView } from "./screens/DashboardView";
+import { JobsView } from "./screens/JobsView";
 import { CalendarView } from "./screens/CalendarView";
 import { PoliciesView } from "./screens/PoliciesView";
 import { RecordsView } from "./screens/RecordsView";
@@ -38,7 +35,7 @@ function App() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [authProviders, setAuthProviders] = useState<AuthProvider[]>([]);
   const [authReady, setAuthReady] = useState(false);
-  const [activeView, setActiveView] = useState<ViewKey>("dashboard");
+  const [activeView, setActiveView] = useState<ViewKey>("jobs");
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [plan, setPlan] = useState<PlanAnalysis | null>(null);
   const [events, setEvents] = useState<JobEvent[]>([]);
@@ -384,6 +381,7 @@ function App() {
 
   const shared = {
     profile,
+    plan,
     events,
     financeTransactions,
     financialRecords,
@@ -424,30 +422,7 @@ function App() {
 
   return (
     <AppFrame activeView={activeView} setActiveView={setActiveView} title={viewTitle(activeView)} status={plan?.status ?? null}>
-      {activeView === "dashboard" && (
-        plan ? (
-          <DashboardView {...shared} plan={plan} />
-        ) : (
-          <>
-            <section className="dashboard-grid">
-              <Panel title="금융 Feature 파일">
-                <div className="requirement">
-                  <span><code>Data/processed/user_month_features.csv</code> 또는 아래 월별 실제 금융 기록이 필요합니다. AI 서비스도 실행되어야 합니다.</span>
-                </div>
-              </Panel>
-              <Panel title="정책 API 키">
-                <div className="requirement">
-                  <span>백엔드 실행 환경에 <code>GOV_API</code>를 설정해야 실제 정책 매칭이 동작합니다.</span>
-                </div>
-              </Panel>
-            </section>
-            <section className="dashboard-grid">
-              <FinancialRecordPanel recordForm={recordForm} setRecordForm={setRecordForm} saveFinancialRecord={saveFinancialRecord} financialRecords={financialRecords} notice={recordNotice} />
-              <ProfilePanel profile={profile} />
-            </section>
-          </>
-        )
-      )}
+      {activeView === "jobs" && <JobsView />}
       {activeView === "calendar" && <CalendarView {...shared} />}
       {activeView === "policies" && <PoliciesView {...shared} />}
       {activeView === "records" && <RecordsView {...shared} />}
