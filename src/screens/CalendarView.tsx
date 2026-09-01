@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { EventForm, FinanceTransaction, JobEvent, TransactionForm } from "../types";
+import type { EventForm, FinanceTransaction, JobEvent, PlanAnalysis, TransactionForm, UserProfile } from "../types";
 import { DayDetailModal } from "../components/DayDetailModal";
 import { EventFormPanel } from "../components/EventFormPanel";
 import { TransactionFormPanel } from "../components/TransactionFormPanel";
@@ -9,10 +9,12 @@ import { FinanceCalendarView } from "./FinanceCalendarView";
 type CalendarTab = "schedule" | "finance";
 
 export function CalendarView({
+  profile, plan, scenario,
   events, eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, runScenario, editingEventId,
   financeTransactions, transactionForm, setTransactionForm, addTransaction, updateTransaction, deleteTransaction, cancelTransactionEdit, editingTransactionId, transactionNotice,
   calendarMonth, setCalendarMonth, monthlyEventCost, eventNotice
 }: {
+  profile: UserProfile; plan: PlanAnalysis | null; scenario: PlanAnalysis | null;
   events: JobEvent[]; eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: (eventId?: string) => Promise<void>; cancelEdit: () => void; runScenario: () => Promise<void>; editingEventId: string | null;
   financeTransactions: FinanceTransaction[]; transactionForm: TransactionForm; setTransactionForm: React.Dispatch<React.SetStateAction<TransactionForm>>; addTransaction: () => Promise<void>; updateTransaction: () => Promise<void>; deleteTransaction: (id?: string) => Promise<void>; cancelTransactionEdit: () => void; editingTransactionId: string | null; transactionNotice?: string | null;
   calendarMonth: string; setCalendarMonth: React.Dispatch<React.SetStateAction<string>>; monthlyEventCost: Array<[string, number]>; eventNotice?: string | null;
@@ -71,6 +73,7 @@ export function CalendarView({
         />
       ) : (
         <FinanceCalendarView
+          profile={profile} plan={plan} scenario={scenario}
           transactions={financeTransactions} transactionForm={transactionForm} setTransactionForm={setTransactionForm} addTransaction={addTransaction}
           updateTransaction={updateTransaction} deleteTransaction={deleteTransaction} cancelEdit={cancelTransactionEdit} editingTransactionId={editingTransactionId}
           calendarMonth={calendarMonth} setCalendarMonth={setCalendarMonth} transactionNotice={transactionNotice} onDayClick={setSelectedDate} onEditTransaction={openEditTransaction}

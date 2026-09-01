@@ -290,6 +290,11 @@ button.preset {
   font-size: 12px;
 }
 
+button.preset.active {
+  color: #fff;
+  background: #2563eb;
+}
+
 .setup-actions {
   display: flex;
   align-items: center;
@@ -528,6 +533,10 @@ button.preset {
 
 .form-row.single {
   grid-template-columns: 1fr;
+}
+
+.form-row.triple {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .button-row {
@@ -1041,7 +1050,8 @@ button.danger {
     grid-template-columns: 1fr;
   }
 
-  .form-row {
+  .form-row,
+  .form-row.triple {
     grid-template-columns: 1fr;
   }
 
