@@ -121,9 +121,16 @@ export type JobFilter = {
   jobMinorCategory: string;
   regions: string[];
   career: string;
+  workType: string;
   education: string;
   employmentType: string;
   minSalary: string;
+  maxSalary: string;
+  salaryPublic: boolean;
+  quick: { entryLevel: boolean; remote: boolean; salaryVisible: boolean; recent: boolean; closingSoon: boolean };
+  companySize: string;
+  industry: string;
+  techStack: string;
 };
 
 export type TransactionForm = {
