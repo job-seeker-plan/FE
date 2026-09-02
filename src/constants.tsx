@@ -42,19 +42,21 @@ export const navItems: Array<{ key: ViewKey; label: string; icon: React.ReactNod
 // 사람인 채용정보 API는 직무(job_cd)/업종(ind_cd)를 대분류-소분류 체계로 제공한다.
 // API 키 연동 전이라 소분류 항목은 비워두고, 이중 선택 UI 틀만 구성해둔다.
 export const jobCategoryTree: Record<string, string[]> = {
-  "기획·전략": [],
-  "마케팅·홍보": [],
-  "영업": [],
-  "IT·개발·데이터": [],
-  "디자인": [],
-  "경영·사무": [],
-  "생산·제조": []
+  "기획·전략": ["서비스기획", "사업기획", "상품기획", "전략기획", "경영기획"],
+  "마케팅·홍보": ["마케팅", "콘텐츠마케팅", "디지털마케팅", "홍보", "광고기획"],
+  "영업": ["영업관리", "일반영업", "기술영업", "해외영업", "영업기획"],
+  "IT·개발·데이터": ["웹개발", "앱개발", "프론트엔드", "백엔드", "데이터엔지니어", "QA·테스터", "DevOps"],
+  "디자인": ["웹디자인", "UI·UX디자인", "그래픽디자인", "제품디자인", "편집디자인"],
+  "경영·사무": ["인사·노무", "회계·세무", "총무·법무", "구매·자재", "사무보조"],
+  "생산·제조": ["생산관리", "품질관리", "기계·설비", "공정관리", "연구개발"]
 };
 
 export const careerLevels = [
   { value: "any", label: "경력무관" },
   { value: "junior", label: "신입" },
-  { value: "senior", label: "경력직" }
+  { value: "1-3", label: "1~3년" },
+  { value: "4-7", label: "4~7년" },
+  { value: "8-plus", label: "8년 이상" }
 ];
 
 export const educationLevels = [
@@ -68,4 +70,11 @@ export const employmentTypes = [
   { value: "fulltime", label: "정규직" },
   { value: "contract", label: "계약직" },
   { value: "intern", label: "인턴" }
+];
+
+export const workTypes = [
+  { value: "any", label: "전체" },
+  { value: "office", label: "출근" },
+  { value: "remote", label: "재택" },
+  { value: "hybrid", label: "하이브리드" }
 ];
