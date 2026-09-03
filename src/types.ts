@@ -141,3 +141,39 @@ export type TransactionForm = {
   amount: string;
   memo: string;
 };
+
+export type HiringSeasonMonthly = {
+  month: number;
+  posting_count: number;
+  seasonality_share: number;
+};
+
+export type SkillTrendItem = {
+  skill: string;
+  count: number;
+  n_postings: number;
+};
+
+export type JdEvidenceItem = {
+  chunk_text: string;
+  posted_date: string;
+  distance: number | null;
+};
+
+export type HiringSeason = {
+  company: string;
+  job_family: string;
+  n_postings_analyzed: number;
+  observed_windows: string[];
+  observed_dates: string[];
+  monthly_breakdown: HiringSeasonMonthly[];
+  skill_trend: SkillTrendItem[];
+  jd_evidence: JdEvidenceItem[];
+  basis: string;
+  caveat: string;
+};
+
+export type CompanySuggestion = {
+  company: string;
+  industry: string;
+};
