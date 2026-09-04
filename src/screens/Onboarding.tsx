@@ -1,9 +1,13 @@
 import React from "react";
 import { BadgeCheck, ShieldCheck } from "lucide-react";
-import type { AuthUser, ProfileForm } from "../types";
+import type { AuthUser, FinancialContextForm, ProfileForm } from "../types";
 import { ProfileFields } from "../components/ProfileFields";
 
-export function Onboarding({ authUser, profileForm, setProfileForm, saveProfile, submitNotice }: { authUser: AuthUser; profileForm: ProfileForm; setProfileForm: React.Dispatch<React.SetStateAction<ProfileForm>>; saveProfile: () => Promise<void>; submitNotice?: string | null }) {
+const goals = ["빠르게 취업하기", "교육·자격증 투자", "면접 준비비 확보", "생활비 안정"];
+const burdens = ["고정 생활비", "교육·자격증", "면접·교통비", "카드 결제"];
+const firstQuestions = ["이번 달 줄일 지출은?", "면접비는 얼마나 남겨둘까?"];
+
+export function Onboarding({ authUser, profileForm, setProfileForm, contextForm, setContextForm, saveProfile, submitNotice }: { authUser: AuthUser; profileForm: ProfileForm; setProfileForm: React.Dispatch<React.SetStateAction<ProfileForm>>; contextForm: FinancialContextForm; setContextForm: React.Dispatch<React.SetStateAction<FinancialContextForm>>; saveProfile: () => Promise<void>; submitNotice?: string | null }) {
   const canSubmit = authUser.user_id && profileForm.available_cash && profileForm.monthly_income && profileForm.age && profileForm.region && profileForm.target_job_month;
 
   return (
@@ -16,8 +20,9 @@ export function Onboarding({ authUser, profileForm, setProfileForm, saveProfile,
       <section className="onboarding-layout">
         <aside className="onboarding-steps">
           <div className="step-item active"><span>1</span><strong>자금</strong><small>가용자금과 월 수입</small></div>
-          <div className="step-item active"><span>2</span><strong>목표</strong><small>취업 목표월과 기본 정보</small></div>
-          <div className="step-item"><span>3</span><strong>정책</strong><small>지역·소득 조건</small></div>
+          <div className="step-item active"><span>2</span><strong>목표</strong><small>취업 목표와 지출 부담</small></div>
+          <div className="step-item active"><span>3</span><strong>다짐</strong><small>선택 입력 · 건너뛸 수 있어요</small></div>
+          <div className="step-item active"><span>4</span><strong>AI 시작</strong><small>받고 싶은 도움 선택</small></div>
         </aside>
 
         <section className="panel setup-panel">
@@ -38,6 +43,14 @@ export function Onboarding({ authUser, profileForm, setProfileForm, saveProfile,
 
           <ProfileFields profileForm={profileForm} setProfileForm={setProfileForm} />
 
+          <div className="context-onboarding">
+            <div><span className="section-kicker">Optional personal context</span><h3>가이드에 반영할 내용을 골라주세요</h3><p>선택한 내용과 직접 입력한 다짐만 개인화 가이드에 사용돼요.</p></div>
+            <ContextChoice label="취업 준비 목표" options={goals} value={contextForm.goal} onChange={(goal) => setContextForm({ ...contextForm, goal })} />
+            <ContextChoice label="부담되는 지출" options={burdens} value={contextForm.burden} onChange={(burden) => setContextForm({ ...contextForm, burden })} />
+            <label className="context-pledge"><span>나만의 다짐 한 줄 <em>선택</em></span><input maxLength={180} placeholder="예: 면접이 있는 달에도 생활비 예산은 지킬래요" value={contextForm.pledge} onChange={(event) => setContextForm({ ...contextForm, pledge: event.target.value })} /></label>
+            <ContextChoice label="AI에게 처음 받고 싶은 도움" options={firstQuestions} value={contextForm.first_question} onChange={(first_question) => setContextForm({ ...contextForm, first_question })} />
+          </div>
+
           <div className="setup-actions">
             <div>
               <strong>{submitNotice ?? (canSubmit ? "캘린더 준비 완료" : "필수 정보를 입력하세요")}</strong>
@@ -49,4 +62,8 @@ export function Onboarding({ authUser, profileForm, setProfileForm, saveProfile,
       </section>
     </main>
   );
+}
+
+function ContextChoice({ label, options, value, onChange }: { label: string; options: string[]; value: string; onChange: (value: string) => void }) {
+  return <div className="context-choice"><span>{label}</span><div>{options.map((option) => <button type="button" key={option} className={value === option ? "active" : ""} onClick={() => onChange(value === option ? "" : option)}>{option}</button>)}</div></div>;
 }

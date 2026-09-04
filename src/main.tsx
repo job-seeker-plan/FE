@@ -10,6 +10,7 @@ import type {
   AuthProvider,
   AuthUser,
   EventForm,
+  FinancialContextForm,
   FinanceTransaction,
   JobEvent,
   MatchedPolicy,
@@ -51,6 +52,7 @@ function App() {
     monthly_income_for_policy: "",
     target_job_month: ""
   });
+  const [financialContextForm, setFinancialContextForm] = useState<FinancialContextForm>({ goal: "", burden: "", pledge: "", first_question: "" });
   const [selectedPolicyIds, setSelectedPolicyIds] = useState<string[]>([]);
   const [confirmedPolicyIds, setConfirmedPolicyIds] = useState<string[]>([]);
   const [confirmedSupport, setConfirmedSupport] = useState({ month: "", amount: "" });
@@ -292,10 +294,23 @@ function App() {
     });
   }
 
+  async function saveFinancialContexts(context: FinancialContextForm) {
+    const contexts = [
+      context.goal && { text: `취업 준비 목표: ${context.goal}`, data_type: "goal", related_category: "cashflow", urgency_level: "normal" },
+      context.burden && { text: `부담을 느끼는 지출: ${context.burden}`, data_type: "spending_concern", related_category: "cashflow", urgency_level: "high" },
+      context.pledge.trim() && { text: `사용자 다짐: ${context.pledge.trim()}`, data_type: "pledge", related_category: "cashflow", urgency_level: "normal" },
+      context.first_question && { text: `처음 받고 싶은 금융 도움: ${context.first_question}`, data_type: "assistant_question", related_category: "cashflow", urgency_level: "normal" }
+    ].filter(Boolean);
+    if (contexts.length > 0) {
+      await request("/financial-contexts", { method: "POST", body: JSON.stringify({ contexts }) });
+    }
+  }
+
   async function saveProfile() {
     try {
       setProfileNotice(null);
       await submitProfile(profileForm);
+      await saveFinancialContexts(financialContextForm);
       setActiveView("calendar");
       await loadDashboard();
     } catch {
@@ -340,7 +355,7 @@ function App() {
   }
 
   if (!profile) {
-    return <Onboarding authUser={authUser} profileForm={profileForm} setProfileForm={setProfileForm} saveProfile={saveProfile} submitNotice={profileNotice} />;
+    return <Onboarding authUser={authUser} profileForm={profileForm} setProfileForm={setProfileForm} contextForm={financialContextForm} setContextForm={setFinancialContextForm} saveProfile={saveProfile} submitNotice={profileNotice} />;
   }
 
   const shared = {

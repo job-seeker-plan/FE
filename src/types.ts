@@ -108,6 +108,13 @@ export type ProfileForm = {
   target_job_month: string;
 };
 
+export type FinancialContextForm = {
+  goal: string;
+  burden: string;
+  pledge: string;
+  first_question: string;
+};
+
 export type RecordForm = {
   month: string;
   spend: string;

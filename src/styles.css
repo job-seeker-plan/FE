@@ -221,6 +221,64 @@ code {
   gap: 10px;
 }
 
+.context-onboarding {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.context-onboarding h3 {
+  margin: 3px 0 4px;
+  font-size: 15px;
+}
+
+.context-onboarding p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.context-choice,
+.context-pledge {
+  display: grid;
+  gap: 8px;
+}
+
+.context-choice > span,
+.context-pledge > span {
+  color: #334155;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.context-pledge em {
+  color: #94a3b8;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.context-choice > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.context-choice button {
+  padding: 8px 10px;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #dbe3ef;
+  font-size: 13px;
+}
+
+.context-choice button.active {
+  color: #1d4ed8;
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
 .step-item {
   display: grid;
   grid-template-columns: 34px 1fr;
