@@ -9,13 +9,13 @@ import { FinanceCalendarView } from "./FinanceCalendarView";
 type CalendarTab = "schedule" | "finance";
 
 export function CalendarView({
-  profile, plan, scenario,
-  events, eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, runScenario, editingEventId,
+  profile, plan,
+  events, eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, editingEventId,
   financeTransactions, transactionForm, setTransactionForm, addTransaction, updateTransaction, deleteTransaction, cancelTransactionEdit, editingTransactionId, transactionNotice,
   calendarMonth, setCalendarMonth, monthlyEventCost, eventNotice
 }: {
-  profile: UserProfile; plan: PlanAnalysis | null; scenario: PlanAnalysis | null;
-  events: JobEvent[]; eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: (eventId?: string) => Promise<void>; cancelEdit: () => void; runScenario: () => Promise<void>; editingEventId: string | null;
+  profile: UserProfile; plan: PlanAnalysis | null;
+  events: JobEvent[]; eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: (eventId?: string) => Promise<void>; cancelEdit: () => void; editingEventId: string | null;
   financeTransactions: FinanceTransaction[]; transactionForm: TransactionForm; setTransactionForm: React.Dispatch<React.SetStateAction<TransactionForm>>; addTransaction: () => Promise<void>; updateTransaction: () => Promise<void>; deleteTransaction: (id?: string) => Promise<void>; cancelTransactionEdit: () => void; editingTransactionId: string | null; transactionNotice?: string | null;
   calendarMonth: string; setCalendarMonth: React.Dispatch<React.SetStateAction<string>>; monthlyEventCost: Array<[string, number]>; eventNotice?: string | null;
 }) {
@@ -68,12 +68,12 @@ export function CalendarView({
       {calendarTab === "schedule" ? (
         <ScheduleCalendarView
           events={events} eventForm={eventForm} setEventForm={setEventForm} addEvent={addEvent} updateEvent={updateEvent} deleteEvent={deleteEvent}
-          cancelEdit={cancelEdit} runScenario={runScenario} editingEventId={editingEventId} calendarMonth={calendarMonth} setCalendarMonth={setCalendarMonth}
+          cancelEdit={cancelEdit} editingEventId={editingEventId} calendarMonth={calendarMonth} setCalendarMonth={setCalendarMonth}
           monthlyEventCost={monthlyEventCost} eventNotice={eventNotice} onDayClick={setSelectedDate} onEditEvent={openEditEvent}
         />
       ) : (
         <FinanceCalendarView
-          profile={profile} plan={plan} scenario={scenario}
+          profile={profile} plan={plan}
           transactions={financeTransactions} transactionForm={transactionForm} setTransactionForm={setTransactionForm} addTransaction={addTransaction}
           updateTransaction={updateTransaction} deleteTransaction={deleteTransaction} cancelEdit={cancelTransactionEdit} editingTransactionId={editingTransactionId}
           calendarMonth={calendarMonth} setCalendarMonth={setCalendarMonth} transactionNotice={transactionNotice} onDayClick={setSelectedDate} onEditTransaction={openEditTransaction}
@@ -104,7 +104,7 @@ export function CalendarView({
               addEvent={async () => { await addEvent(); setEventFormModalOpen(false); }}
               updateEvent={async () => { await updateEvent(); setEventFormModalOpen(false); }}
               deleteEvent={async () => { await deleteEvent(); setEventFormModalOpen(false); }}
-              cancelEdit={closeEventFormModal} runScenario={runScenario} editing={Boolean(editingEventId)} notice={eventNotice}
+              cancelEdit={closeEventFormModal} editing={Boolean(editingEventId)} notice={eventNotice}
             />
           </div>
         </div>
