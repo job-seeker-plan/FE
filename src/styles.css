@@ -81,7 +81,7 @@ button:disabled {
   opacity: 0.45;
 }
 
-input,
+input:not([type="checkbox"]),
 select {
   width: 100%;
   min-width: 0;
@@ -90,6 +90,13 @@ select {
   padding: 10px 12px;
   color: #182233;
   background: #fff;
+}
+
+input[type="checkbox"] {
+  width: auto;
+  min-width: auto;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 input[readonly] {
@@ -870,6 +877,18 @@ button.preset.active {
   height: 300px;
 }
 
+.guide-badge {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  border: 1px solid #93c5fd;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .guide {
   color: #273449;
   font-size: 15px;
@@ -1520,4 +1539,131 @@ button.danger {
   .muted-cell {
     display: none;
   }
+}
+
+/* ── Email Import Modal ─────────────────────────────────────────────────────── */
+.modal-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.error-text {
+  color: #b42318;
+}
+
+.email-import-modal {
+  width: min(100%, 560px);
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+}
+
+.email-import-modal .modal-header {
+  padding: 0;
+  border: none;
+}
+
+.email-import-status {
+  text-align: center;
+  padding: 24px 0;
+}
+
+.email-import-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #e4eaf2;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.email-import-toolbar .checkbox-label {
+  white-space: nowrap;
+}
+
+.email-import-list {
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.email-import-item {
+  border: 1px solid #e4eaf2;
+  border-radius: 8px;
+  padding: 8px 12px;
+  transition: background 0.1s;
+}
+
+.email-import-item.checked {
+  border-color: #2563eb;
+  background: #f0f5ff;
+}
+
+.email-import-item .checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.email-import-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+}
+
+.email-import-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #182233;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.email-import-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.event-type-badge {
+  background: #e4eaf2;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.icon-button-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  height: 30px;
+  font-size: 12px;
+  font-weight: 600;
 }

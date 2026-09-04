@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronLeft, ChevronRight, Pencil, Trash2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Mail, Pencil, Trash2, X } from "lucide-react";
 import type { EventForm, JobEvent } from "../types";
 import { buildCalendarDays } from "../utils";
 import { EventFormPanel } from "../components/EventFormPanel";
@@ -7,7 +7,7 @@ import { Panel } from "../components/Panel";
 import { eventTypeLabels } from "../constants";
 import { formatWon } from "../utils";
 
-export function ScheduleCalendarView({ events, eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, editingEventId, calendarMonth, setCalendarMonth, monthlyEventCost, eventNotice, onDayClick, onEditEvent }: { events: JobEvent[]; eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: (eventId?: string) => Promise<void>; cancelEdit: () => void; editingEventId: string | null; calendarMonth: string; setCalendarMonth: React.Dispatch<React.SetStateAction<string>>; monthlyEventCost: Array<[string, number]>; eventNotice?: string | null; onDayClick: (date: string) => void; onEditEvent: (event: JobEvent) => void }) {
+export function ScheduleCalendarView({ events, eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, editingEventId, calendarMonth, setCalendarMonth, monthlyEventCost, eventNotice, onDayClick, onEditEvent, canImportEmail, onOpenEmailImport }: { events: JobEvent[]; eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: (eventId?: string) => Promise<void>; cancelEdit: () => void; editingEventId: string | null; calendarMonth: string; setCalendarMonth: React.Dispatch<React.SetStateAction<string>>; monthlyEventCost: Array<[string, number]>; eventNotice?: string | null; onDayClick: (date: string) => void; onEditEvent: (event: JobEvent) => void; canImportEmail?: boolean; onOpenEmailImport?: () => void }) {
   const calendarDays = buildCalendarDays(calendarMonth, events);
   const monthCost = monthlyEventCost.find(([month]) => month === calendarMonth)?.[1] ?? 0;
   const [selectedEvent, setSelectedEvent] = useState<JobEvent | null>(null);
@@ -37,6 +37,11 @@ export function ScheduleCalendarView({ events, eventForm, setEventForm, addEvent
           <strong className="calendar-month-title">{calendarMonth.replace("-", "년 ")}월</strong>
           <button className="icon-button calendar-nav-button" aria-label="다음 달" onClick={() => shiftMonth(1)}><ChevronRight size={20} /></button>
           <span className="calendar-month-cost">예상 취준비 {formatWon(monthCost)}</span>
+          {canImportEmail && onOpenEmailImport && (
+            <button className="secondary icon-button-text" onClick={onOpenEmailImport} title="Gmail에서 채용 일정 자동 가져오기">
+              <Mail size={15} /> 메일 가져오기
+            </button>
+          )}
         </div>
         <div className="weekday-row">
           {["일", "월", "화", "수", "목", "금", "토"].map((day) => <span key={day}>{day}</span>)}

@@ -57,6 +57,9 @@ export function FinanceCalendarView({ profile, plan, transactions, transactionFo
               </div>
             </Panel>
             <Panel title="AI 행동 가이드">
+              {plan.guide_personalized && (
+                <span className="guide-badge">회원님이 입력한 내용 {plan.guide_context_count}개를 반영했어요</span>
+              )}
               <p className="guide">{plan.guide}</p>
               <div className="flow-list">
                 {plan.monthly_cash_flows.slice(0, 4).map((flow) => (
