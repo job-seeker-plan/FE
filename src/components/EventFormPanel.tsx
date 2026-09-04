@@ -5,7 +5,7 @@ import { eventTypeLabels } from "../constants";
 import { buildCalendarDays, currentMonthValue } from "../utils";
 import { Panel } from "./Panel";
 
-export function EventFormPanel({ eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, runScenario, editing, notice }: { eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: () => Promise<void>; cancelEdit: () => void; runScenario: () => Promise<void>; editing: boolean; notice?: string | null }) {
+export function EventFormPanel({ eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, editing, notice }: { eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: () => Promise<void>; cancelEdit: () => void; editing: boolean; notice?: string | null }) {
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
   const [pickerMonth, setPickerMonth] = React.useState(eventForm.event_date.slice(0, 7) || currentMonthValue());
   const pickerDays = buildCalendarDays(pickerMonth, []);
@@ -32,7 +32,7 @@ export function EventFormPanel({ eventForm, setEventForm, addEvent, updateEvent,
       </div>
       <div className="form-row">
         <button className="date-trigger" type="button" onClick={openDatePicker}><CalendarDays size={16} />{eventForm.event_date || "날짜 선택"}</button>
-        <label className="money-field"><span>예상비용</span><div className="money-input"><input type="number" min="0" value={eventForm.expected_cost} onChange={(event) => setEventForm({ ...eventForm, expected_cost: event.target.value })} /><span>만원</span></div></label>
+        <label className="money-field"><span>예상비용</span><div className="money-input"><input type="number" min="0" placeholder="0" value={eventForm.expected_cost} onChange={(event) => setEventForm({ ...eventForm, expected_cost: event.target.value })} /><span>만원</span></div></label>
       </div>
       <div className="button-row">
         {editing ? <>
@@ -40,7 +40,6 @@ export function EventFormPanel({ eventForm, setEventForm, addEvent, updateEvent,
           <button className="danger" onClick={deleteEvent}><Trash2 size={16} />삭제</button>
           <button className="secondary" onClick={cancelEdit}><X size={16} />취소</button>
         </> : <button onClick={addEvent}><CalendarPlus size={16} />일정 저장</button>}
-        <button className="secondary" onClick={runScenario}>What-if 실행</button>
       </div>
       {notice && <p className="muted">{notice}</p>}
     </Panel>
