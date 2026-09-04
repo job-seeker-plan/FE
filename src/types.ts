@@ -1,4 +1,4 @@
-export type ViewKey = "jobs" | "calendar" | "policies" | "records" | "settings";
+export type ViewKey = "jobs" | "calendar" | "policies" | "settings";
 export type Status = "stable" | "caution" | "risk";
 
 export type AuthUser = {
@@ -117,6 +117,7 @@ export type RecordForm = {
 };
 
 export type JobFilter = {
+  keyword: string;
   jobMajorCategory: string;
   jobMinorCategory: string;
   regions: string[];
@@ -131,6 +132,26 @@ export type JobFilter = {
   companySize: string;
   industry: string;
   techStack: string;
+};
+
+export type LinkareerRecruitment = {
+  id: string;
+  title: string;
+  company: string;
+  categories: string[];
+  locations: string[];
+  employment_type: string;
+  deadline: string;
+  url: string;
+};
+
+export type LinkareerRecruitmentResult = {
+  jobs: LinkareerRecruitment[];
+  source_url: string;
+  total_count: number;
+  page: number;
+  page_size: number;
+  cached: boolean;
 };
 
 export type TransactionForm = {

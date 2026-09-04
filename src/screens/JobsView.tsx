@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, RotateCcw, Search, SlidersHorizontal, TrendingUp } from "lucide-react";
-import type { CompanySuggestion, HiringSeason, JobFilter } from "../types";
+import { ChevronDown, ExternalLink, RotateCcw, Search, SlidersHorizontal, TrendingUp } from "lucide-react";
+import type { CompanySuggestion, HiringSeason, JobFilter, LinkareerRecruitmentResult } from "../types";
 import { careerLevels, educationLevels, employmentTypes, jobCategoryTree, regions, workTypes } from "../constants";
 import { Panel } from "../components/Panel";
 import { request } from "../api";
 
 const emptyFilter: JobFilter = {
-  jobMajorCategory: "", jobMinorCategory: "", regions: [], career: "any", workType: "any",
-  education: "any", employmentType: "fulltime", minSalary: "", maxSalary: "", salaryPublic: false,
+  keyword: "", jobMajorCategory: "", jobMinorCategory: "", regions: [], career: "any", workType: "any",
+  education: "any", employmentType: "any", minSalary: "", maxSalary: "", salaryPublic: false,
   quick: { entryLevel: false, remote: false, salaryVisible: false, recent: false, closingSoon: false },
   companySize: "", industry: "", techStack: ""
 };
@@ -17,10 +17,33 @@ const quickFilters: Array<[keyof JobFilter["quick"], string]> = [
   ["recent", "최근 등록"], ["closingSoon", "마감 임박"]
 ];
 
+const linkareerJobCategory: Record<string, string> = {
+  "기획·전략": "100001",
+  "마케팅·홍보": "100002",
+  "영업": "100005",
+  "IT·개발·데이터": "100003",
+  "디자인": "100004",
+  "경영·사무": "100001",
+  "생산·제조": "100006"
+};
+
+const linkareerRegion: Record<string, string> = {
+  "서울": "2", "부산": "3", "대구": "4", "인천": "5", "광주": "6", "대전": "7", "울산": "8", "경기": "9", "강원": "10",
+  "충북": "11", "충남": "11", "전북": "25", "전남": "25", "경북": "26", "경남": "26", "제주": "27", "세종": "28"
+};
+
+function pageNumbers(currentPage: number, totalPages: number) {
+  const start = Math.max(1, Math.min(currentPage - 2, Math.max(1, totalPages - 4)));
+  return Array.from({ length: Math.min(5, totalPages - start + 1) }, (_, index) => start + index);
+}
+
 export function JobsView() {
   const [filter, setFilter] = useState<JobFilter>(emptyFilter);
   const [showDetails, setShowDetails] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [result, setResult] = useState<LinkareerRecruitmentResult | null>(null);
   const jobMinorOptions = filter.jobMajorCategory ? jobCategoryTree[filter.jobMajorCategory] ?? [] : [];
 
   // 채용 시즌 정보 - 실시간 공고 검색(위 필터)이랑은 별개로, 회사 하나를 골라서
@@ -90,8 +113,38 @@ export function JobsView() {
   function reset() {
     setFilter(emptyFilter);
     setSearched(false);
+    setSearchError(null);
+    setResult(null);
   }
   const activeQuickCount = Object.values(filter.quick).filter(Boolean).length;
+
+  async function searchJobs(page = 1) {
+    try {
+      setSearching(true);
+      setSearchError(null);
+      setSearched(true);
+      setResult(await request<LinkareerRecruitmentResult>("/jobs/search", {
+        method: "POST",
+        body: JSON.stringify({
+          keyword: filter.keyword || filter.jobMinorCategory,
+          category_id: linkareerJobCategory[filter.jobMajorCategory] || null,
+          region_id: linkareerRegion[filter.regions[0] ?? ""] || null,
+          job_type: filter.employmentType === "any" ? null : filter.employmentType,
+          page
+        })
+      }));
+    } catch {
+      setResult(null);
+      setSearchError("링커리어 공고를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  const totalPages = result ? Math.ceil(result.total_count / result.page_size) : 0;
+  const resultPageNumbers = result ? pageNumbers(result.page, totalPages) : [];
+  const rangeStart = result ? (result.page - 1) * result.page_size + 1 : 0;
+  const rangeEnd = result ? rangeStart + result.jobs.length - 1 : 0;
 
   return (
     <section className="jobs-page">
@@ -101,6 +154,7 @@ export function JobsView() {
           <button className="secondary" type="button" onClick={reset}><RotateCcw size={15} />초기화</button>
         </div>
         <div className="job-primary-filters">
+          <label className="job-primary-field"><span>검색어</span><input placeholder="예: 백엔드, 마케팅, 인턴" value={filter.keyword} onChange={(event) => updateFilter("keyword", event.target.value)} /></label>
           <label className="job-primary-field"><span>지역</span><select value={filter.regions[0] ?? ""} onChange={(event) => updateFilter("regions", event.target.value ? [event.target.value] : [])}><option value="">전체 지역</option>{regions.map((region) => <option key={region}>{region}</option>)}</select></label>
           <label className="job-primary-field"><span>직무</span><select value={filter.jobMajorCategory} onChange={(event) => setFilter({ ...filter, jobMajorCategory: event.target.value, jobMinorCategory: "" })}><option value="">전체 직무</option>{Object.keys(jobCategoryTree).map((category) => <option key={category}>{category}</option>)}</select></label>
           <label className="job-primary-field"><span>경력</span><select value={filter.career} onChange={(event) => updateFilter("career", event.target.value)}>{careerLevels.map((level) => <option key={level.value} value={level.value}>{level.label}</option>)}</select></label>
@@ -123,10 +177,24 @@ export function JobsView() {
           <label><span>산업 분야</span><select value={filter.industry} onChange={(event) => updateFilter("industry", event.target.value)}><option value="">전체</option><option>IT·플랫폼</option><option>금융</option><option>제조</option><option>커머스</option><option>교육</option></select></label>
           <label className="detail-wide"><span>기술 스택</span><input placeholder="예: Java, React, Python" value={filter.techStack} onChange={(event) => updateFilter("techStack", event.target.value)} /></label>
         </div>}
-        <button className="job-search-button" type="button" onClick={() => setSearched(true)}><Search size={17} />조건에 맞는 공고 검색</button>
+        <button className="job-search-button" type="button" disabled={searching} onClick={() => void searchJobs()}><Search size={17} />{searching ? "링커리어 공고를 불러오는 중" : "조건에 맞는 공고 검색"}</button>
       </Panel>
       <Panel title="검색 결과">
-        <div className="jobs-empty-state"><Search size={30} /><strong>{searched ? "공고 검색을 준비했어요" : "조건을 설정해보세요"}</strong><span>{searched ? "사람인 API 연동 후 설정한 조건에 맞는 채용공고가 여기에 표시됩니다." : "지역·직무·경력부터 선택하면 더 빠르게 공고를 찾을 수 있습니다."}</span></div>
+        {searchError && <p className="jobs-search-error">{searchError}</p>}
+        {!searchError && result && result.jobs.length > 0 && <div className="job-result-list">
+          <p className="jobs-result-note">링커리어 공개 공고 {result.total_count.toLocaleString()}건 중 {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()}번째{result.cached ? " · 최근 검색 결과" : ""}</p>
+          {result.jobs.map((job) => <article className="job-result-card" key={job.id}>
+            <div><strong>{job.title}</strong><span>{job.company}</span></div>
+            <div className="job-result-meta"><span>{job.locations.join(" · ") || "근무지 원문 확인"}</span><span>{job.categories.join(" · ") || job.employment_type}</span><span>{job.employment_type} · {job.deadline}</span></div>
+            <a href={job.url} target="_blank" rel="noreferrer">공고 보기 <ExternalLink size={14} /></a>
+          </article>)}
+          {totalPages > 1 && <nav className="job-pagination" aria-label="공고 검색 결과 페이지">
+            <button type="button" className="secondary" disabled={searching || result.page === 1} onClick={() => void searchJobs(result.page - 1)}>이전</button>
+            {resultPageNumbers.map((page) => <button type="button" key={page} className={page === result.page ? "active" : "secondary"} disabled={searching || page === result.page} onClick={() => void searchJobs(page)}>{page}</button>)}
+            <button type="button" className="secondary" disabled={searching || result.page === totalPages} onClick={() => void searchJobs(result.page + 1)}>다음</button>
+          </nav>}
+        </div>}
+        {!searchError && (!result || result.jobs.length === 0) && <div className="jobs-empty-state"><Search size={30} /><strong>{searched ? "표시할 공고가 없어요" : "조건을 설정해보세요"}</strong><span>{searched ? "검색어·직무·지역을 바꿔 다시 시도해 주세요." : "검색어·직무·지역을 설정하면 링커리어 공개 공고를 불러옵니다."}</span></div>}
       </Panel>
       <Panel title="채용 시즌 정보 (프로토타입)">
         <div className="job-primary-filters">

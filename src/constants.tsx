@@ -1,4 +1,4 @@
-import { Briefcase, CalendarDays, Database, Settings, ShieldCheck } from "lucide-react";
+import { Briefcase, CalendarDays, Settings, ShieldCheck } from "lucide-react";
 import type { ViewKey } from "./types";
 
 export const eventTypeLabels: Record<string, string> = {
@@ -35,7 +35,6 @@ export const navItems: Array<{ key: ViewKey; label: string; icon: React.ReactNod
   { key: "jobs", label: "채용 공고", icon: <Briefcase size={17} /> },
   { key: "calendar", label: "취업 캘린더", icon: <CalendarDays size={17} /> },
   { key: "policies", label: "정책 매칭", icon: <ShieldCheck size={17} /> },
-  { key: "records", label: "금융 기록", icon: <Database size={17} /> },
   { key: "settings", label: "설정", icon: <Settings size={17} /> }
 ];
 
@@ -67,9 +66,11 @@ export const educationLevels = [
 ];
 
 export const employmentTypes = [
-  { value: "fulltime", label: "정규직" },
-  { value: "contract", label: "계약직" },
-  { value: "intern", label: "인턴" }
+  { value: "any", label: "전체" },
+  { value: "NEW", label: "신입" },
+  { value: "EXPERIENCED", label: "경력직" },
+  { value: "CONTRACT", label: "계약직" },
+  { value: "INTERN", label: "인턴" }
 ];
 
 export const workTypes = [
