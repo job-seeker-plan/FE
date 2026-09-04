@@ -135,7 +135,7 @@ export function JobsView() {
       }));
     } catch {
       setResult(null);
-      setSearchError("링커리어 공고를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.");
+      setSearchError("채용공고를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.");
     } finally {
       setSearching(false);
     }
@@ -177,12 +177,12 @@ export function JobsView() {
           <label><span>산업 분야</span><select value={filter.industry} onChange={(event) => updateFilter("industry", event.target.value)}><option value="">전체</option><option>IT·플랫폼</option><option>금융</option><option>제조</option><option>커머스</option><option>교육</option></select></label>
           <label className="detail-wide"><span>기술 스택</span><input placeholder="예: Java, React, Python" value={filter.techStack} onChange={(event) => updateFilter("techStack", event.target.value)} /></label>
         </div>}
-        <button className="job-search-button" type="button" disabled={searching} onClick={() => void searchJobs()}><Search size={17} />{searching ? "링커리어 공고를 불러오는 중" : "조건에 맞는 공고 검색"}</button>
+        <button className="job-search-button" type="button" disabled={searching} onClick={() => void searchJobs()}><Search size={17} />{searching ? "채용공고를 불러오는 중" : "조건에 맞는 공고 검색"}</button>
       </Panel>
       <Panel title="검색 결과">
         {searchError && <p className="jobs-search-error">{searchError}</p>}
         {!searchError && result && result.jobs.length > 0 && <div className="job-result-list">
-          <p className="jobs-result-note">링커리어 공개 공고 {result.total_count.toLocaleString()}건 중 {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()}번째{result.cached ? " · 최근 검색 결과" : ""}</p>
+          <p className="jobs-result-note">공개 채용공고 {result.total_count.toLocaleString()}건 중 {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()}번째{result.cached ? " · 최근 검색 결과" : ""}</p>
           {result.jobs.map((job) => <article className="job-result-card" key={job.id}>
             <div><strong>{job.title}</strong><span>{job.company}</span></div>
             <div className="job-result-meta"><span>{job.locations.join(" · ") || "근무지 원문 확인"}</span><span>{job.categories.join(" · ") || job.employment_type}</span><span>{job.employment_type} · {job.deadline}</span></div>
@@ -194,7 +194,7 @@ export function JobsView() {
             <button type="button" className="secondary" disabled={searching || result.page === totalPages} onClick={() => void searchJobs(result.page + 1)}>다음</button>
           </nav>}
         </div>}
-        {!searchError && (!result || result.jobs.length === 0) && <div className="jobs-empty-state"><Search size={30} /><strong>{searched ? "표시할 공고가 없어요" : "조건을 설정해보세요"}</strong><span>{searched ? "검색어·직무·지역을 바꿔 다시 시도해 주세요." : "검색어·직무·지역을 설정하면 링커리어 공개 공고를 불러옵니다."}</span></div>}
+        {!searchError && (!result || result.jobs.length === 0) && <div className="jobs-empty-state"><Search size={30} /><strong>{searched ? "표시할 공고가 없어요" : "조건을 설정해보세요"}</strong><span>{searched ? "검색어·직무·지역을 바꿔 다시 시도해 주세요." : "검색어·직무·지역을 설정하면 공개 채용공고를 불러옵니다."}</span></div>}
       </Panel>
       <Panel title="채용 시즌 정보 (프로토타입)">
         <div className="job-primary-filters">

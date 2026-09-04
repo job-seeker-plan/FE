@@ -55,8 +55,6 @@ function App() {
   const [financialContextForm, setFinancialContextForm] = useState<FinancialContextForm>({ goal: "", burden: "", pledge: "", first_question: "" });
   const [selectedPolicyIds, setSelectedPolicyIds] = useState<string[]>([]);
   const [confirmedPolicyIds, setConfirmedPolicyIds] = useState<string[]>([]);
-  const [confirmedSupport, setConfirmedSupport] = useState({ month: "", amount: "" });
-  const [scenario, setScenario] = useState<PlanAnalysis | null>(null);
   const [profileNotice, setProfileNotice] = useState<string | null>(null);
   const [settingsNotice, setSettingsNotice] = useState<string | null>(null);
   const [eventNotice, setEventNotice] = useState<string | null>(null);
@@ -118,7 +116,7 @@ function App() {
   }, [events]);
 
   async function addEvent() {
-    if (!eventForm.title || !eventForm.event_date || !eventForm.expected_cost) return;
+    if (!eventForm.title || !eventForm.event_date) return;
     try {
       setEventNotice(null);
       const savedEvent = await request<JobEvent>("/events", {
@@ -134,7 +132,7 @@ function App() {
   }
 
   async function updateEvent() {
-    if (!eventForm.id || !eventForm.title || !eventForm.event_date || !eventForm.expected_cost) return;
+    if (!eventForm.id || !eventForm.title || !eventForm.event_date) return;
     try {
       setEventNotice(null);
       const updatedEvent = await request<JobEvent>(`/events/${eventForm.id}`, {
@@ -260,24 +258,6 @@ function App() {
     setTransactionNotice(null);
   }
 
-  async function runScenario() {
-    if (confirmedSupport.amount && (!confirmedSupport.month || selectedPolicyIds.length === 0)) {
-      setError("확정 정책 지원금을 계산하려면 정책을 하나 이상 선택하고 지급월을 입력하세요.");
-      return;
-    }
-    const nextScenario = await request<PlanAnalysis>("/scenario", {
-      method: "POST",
-      body: JSON.stringify({
-        extra_month: eventForm.event_date ? eventForm.event_date.slice(0, 7) : null,
-        extra_cost: toWon(eventForm.expected_cost),
-        policy_ids: selectedPolicyIds,
-        confirmed_support_month: confirmedSupport.month || null,
-        confirmed_support_amount: toWon(confirmedSupport.amount)
-      })
-    });
-    setScenario(nextScenario);
-  }
-
   async function submitProfile(form: ProfileForm) {
     await request<UserProfile>("/profile", {
       method: "PUT",
@@ -369,8 +349,6 @@ function App() {
     confirmedPolicyIds,
     confirmSelectedPolicies,
     policyNotice,
-    confirmedSupport,
-    setConfirmedSupport,
     eventForm,
     setEventForm,
     addEvent,
@@ -386,8 +364,6 @@ function App() {
     cancelTransactionEdit,
     editingTransactionId: transactionForm.id ?? null,
     transactionNotice,
-    runScenario,
-    scenario,
     monthlyEventCost,
     calendarMonth,
     setCalendarMonth,

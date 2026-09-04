@@ -8,7 +8,7 @@ import { Metric } from "../components/Metric";
 import { Panel } from "../components/Panel";
 import { expenseCategoryLabels, incomeCategoryLabels } from "../constants";
 
-export function FinanceCalendarView({ profile, plan, scenario, transactions, transactionForm, setTransactionForm, addTransaction, updateTransaction, deleteTransaction, cancelEdit, editingTransactionId, calendarMonth, setCalendarMonth, transactionNotice, onDayClick, onEditTransaction }: { profile: UserProfile; plan: PlanAnalysis | null; scenario: PlanAnalysis | null; transactions: FinanceTransaction[]; transactionForm: TransactionForm; setTransactionForm: React.Dispatch<React.SetStateAction<TransactionForm>>; addTransaction: () => Promise<void>; updateTransaction: () => Promise<void>; deleteTransaction: (id?: string) => Promise<void>; cancelEdit: () => void; editingTransactionId: string | null; calendarMonth: string; setCalendarMonth: React.Dispatch<React.SetStateAction<string>>; transactionNotice?: string | null; onDayClick: (date: string) => void; onEditTransaction: (transaction: FinanceTransaction) => void }) {
+export function FinanceCalendarView({ profile, plan, transactions, transactionForm, setTransactionForm, addTransaction, updateTransaction, deleteTransaction, cancelEdit, editingTransactionId, calendarMonth, setCalendarMonth, transactionNotice, onDayClick, onEditTransaction }: { profile: UserProfile; plan: PlanAnalysis | null; transactions: FinanceTransaction[]; transactionForm: TransactionForm; setTransactionForm: React.Dispatch<React.SetStateAction<TransactionForm>>; addTransaction: () => Promise<void>; updateTransaction: () => Promise<void>; deleteTransaction: (id?: string) => Promise<void>; cancelEdit: () => void; editingTransactionId: string | null; calendarMonth: string; setCalendarMonth: React.Dispatch<React.SetStateAction<string>>; transactionNotice?: string | null; onDayClick: (date: string) => void; onEditTransaction: (transaction: FinanceTransaction) => void }) {
   const calendarDays = buildFinanceCalendarDays(calendarMonth, transactions);
   const chartData = plan?.monthly_cash_flows.map((flow) => ({ month: flow.month, balance: flow.closing_cash })) ?? [];
   const monthTransactions = transactions.filter((transaction) => transaction.occurred_on.slice(0, 7) === calendarMonth);
@@ -66,7 +66,6 @@ export function FinanceCalendarView({ profile, plan, scenario, transactions, tra
                   </div>
                 ))}
               </div>
-              {scenario && <p className="scenario-note">시나리오 예상잔액 {formatWon(scenario.target_month_balance)}</p>}
             </Panel>
           </section>
         </>

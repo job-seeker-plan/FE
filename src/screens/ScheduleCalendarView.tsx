@@ -7,7 +7,7 @@ import { Panel } from "../components/Panel";
 import { eventTypeLabels } from "../constants";
 import { formatWon } from "../utils";
 
-export function ScheduleCalendarView({ events, eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, runScenario, editingEventId, calendarMonth, setCalendarMonth, monthlyEventCost, eventNotice, onDayClick, onEditEvent }: { events: JobEvent[]; eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: (eventId?: string) => Promise<void>; cancelEdit: () => void; runScenario: () => Promise<void>; editingEventId: string | null; calendarMonth: string; setCalendarMonth: React.Dispatch<React.SetStateAction<string>>; monthlyEventCost: Array<[string, number]>; eventNotice?: string | null; onDayClick: (date: string) => void; onEditEvent: (event: JobEvent) => void }) {
+export function ScheduleCalendarView({ events, eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, editingEventId, calendarMonth, setCalendarMonth, monthlyEventCost, eventNotice, onDayClick, onEditEvent }: { events: JobEvent[]; eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: (eventId?: string) => Promise<void>; cancelEdit: () => void; editingEventId: string | null; calendarMonth: string; setCalendarMonth: React.Dispatch<React.SetStateAction<string>>; monthlyEventCost: Array<[string, number]>; eventNotice?: string | null; onDayClick: (date: string) => void; onEditEvent: (event: JobEvent) => void }) {
   const calendarDays = buildCalendarDays(calendarMonth, events);
   const monthCost = monthlyEventCost.find(([month]) => month === calendarMonth)?.[1] ?? 0;
   const [selectedEvent, setSelectedEvent] = useState<JobEvent | null>(null);
@@ -57,7 +57,7 @@ export function ScheduleCalendarView({ events, eventForm, setEventForm, addEvent
         </div>
       </Panel>
       <section className="side-stack">
-        <EventFormPanel eventForm={eventForm} setEventForm={setEventForm} addEvent={addEvent} updateEvent={updateEvent} deleteEvent={deleteEvent} cancelEdit={cancelEdit} runScenario={runScenario} editing={Boolean(editingEventId)} notice={eventNotice} />
+        <EventFormPanel eventForm={eventForm} setEventForm={setEventForm} addEvent={addEvent} updateEvent={updateEvent} deleteEvent={deleteEvent} cancelEdit={cancelEdit} editing={Boolean(editingEventId)} notice={eventNotice} />
         <Panel title="일정 목록">
           <div className="item-list">
             {events.length === 0 && <p className="muted">등록된 항목이 없습니다.</p>}
