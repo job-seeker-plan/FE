@@ -50,14 +50,6 @@ export const jobCategoryTree: Record<string, string[]> = {
   "생산·제조": ["생산관리", "품질관리", "기계·설비", "공정관리", "연구개발"]
 };
 
-export const careerLevels = [
-  { value: "any", label: "경력무관" },
-  { value: "junior", label: "신입" },
-  { value: "1-3", label: "1~3년" },
-  { value: "4-7", label: "4~7년" },
-  { value: "8-plus", label: "8년 이상" }
-];
-
 export const educationLevels = [
   { value: "any", label: "학력무관" },
   { value: "college", label: "전문대졸" },

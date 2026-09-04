@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ExternalLink, RotateCcw, Search, SlidersHorizontal, TrendingUp } from "lucide-react";
 import type { CompanySuggestion, HiringSeason, JobFilter, LinkareerRecruitmentResult } from "../types";
-import { careerLevels, educationLevels, employmentTypes, jobCategoryTree, regions, workTypes } from "../constants";
+import { educationLevels, employmentTypes, jobCategoryTree, regions, workTypes } from "../constants";
 import { Panel } from "../components/Panel";
 import { request } from "../api";
 
 const emptyFilter: JobFilter = {
-  keyword: "", jobMajorCategory: "", jobMinorCategory: "", regions: [], career: "any", workType: "any",
-  education: "any", employmentType: "any", minSalary: "", maxSalary: "", salaryPublic: false,
-  quick: { entryLevel: false, remote: false, salaryVisible: false, recent: false, closingSoon: false },
+  keyword: "", jobMajorCategory: "", jobMinorCategory: "", regions: [], workType: "any",
+  education: "any", employmentType: "any",
+  quick: { entryLevel: false, remote: false, recent: false, closingSoon: false },
   companySize: "", industry: "", techStack: ""
 };
 
 const quickFilters: Array<[keyof JobFilter["quick"], string]> = [
-  ["entryLevel", "신입 가능"], ["remote", "재택 가능"], ["salaryVisible", "급여 공개"],
+  ["entryLevel", "신입 가능"], ["remote", "재택 가능"],
   ["recent", "최근 등록"], ["closingSoon", "마감 임박"]
 ];
 
@@ -157,14 +157,11 @@ export function JobsView() {
           <label className="job-primary-field"><span>검색어</span><input placeholder="예: 백엔드, 마케팅, 인턴" value={filter.keyword} onChange={(event) => updateFilter("keyword", event.target.value)} /></label>
           <label className="job-primary-field"><span>지역</span><select value={filter.regions[0] ?? ""} onChange={(event) => updateFilter("regions", event.target.value ? [event.target.value] : [])}><option value="">전체 지역</option>{regions.map((region) => <option key={region}>{region}</option>)}</select></label>
           <label className="job-primary-field"><span>직무</span><select value={filter.jobMajorCategory} onChange={(event) => setFilter({ ...filter, jobMajorCategory: event.target.value, jobMinorCategory: "" })}><option value="">전체 직무</option>{Object.keys(jobCategoryTree).map((category) => <option key={category}>{category}</option>)}</select></label>
-          <label className="job-primary-field"><span>경력</span><select value={filter.career} onChange={(event) => updateFilter("career", event.target.value)}>{careerLevels.map((level) => <option key={level.value} value={level.value}>{level.label}</option>)}</select></label>
         </div>
         <div className="job-filter-row">
           <label><span>근무 형태</span><select value={filter.workType} onChange={(event) => updateFilter("workType", event.target.value)}>{workTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}</select></label>
           <label><span>고용 형태</span><select value={filter.employmentType} onChange={(event) => updateFilter("employmentType", event.target.value)}>{employmentTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}</select></label>
-          <div className="job-salary-field"><span>연봉</span><div className="salary-range"><input type="number" min="0" placeholder="최소" value={filter.minSalary} onChange={(event) => updateFilter("minSalary", event.target.value)} /><b>~</b><input type="number" min="0" placeholder="최대" value={filter.maxSalary} onChange={(event) => updateFilter("maxSalary", event.target.value)} /><em>만원</em></div></div>
         </div>
-        <label className="inline-check"><input type="checkbox" checked={filter.salaryPublic} onChange={(event) => updateFilter("salaryPublic", event.target.checked)} />급여 공개 공고만</label>
         <div className="quick-filter-section">
           <div className="section-label"><span>빠른 조건</span>{activeQuickCount > 0 && <small>{activeQuickCount}개 선택</small>}</div>
           <div className="quick-filter-row">{quickFilters.map(([key, label]) => <button type="button" key={key} className={"quick-filter " + (filter.quick[key] ? "active" : "")} onClick={() => toggleQuick(key)}>{label}</button>)}</div>
@@ -223,7 +220,7 @@ export function JobsView() {
               </div>
             )}
           </label>
-          <label className="job-primary-field"><span>직무</span><input placeholder="예: 데이터 (목데이터 확인용, 삼성전자+데이터 또는 CJ ENM+콘텐츠)" value={seasonJobFamily} onChange={(event) => setSeasonJobFamily(event.target.value)} /></label>
+          <label className="job-primary-field"><span>직무</span><input placeholder="예: 데이터 (목데이터: 삼성전자+데이터, 삼성SDS+IT컨설팅, 카카오+서비스기획, 카카오뱅크+금융IT, CJ ENM+콘텐츠, CJ대한통운+물류, CJ제일제당+생산관리, CJ올리브영+MD)" value={seasonJobFamily} onChange={(event) => setSeasonJobFamily(event.target.value)} /></label>
         </div>
         <button className="job-search-button" type="button" onClick={lookupSeason} disabled={seasonLoading || !seasonCompany || !seasonJobFamily}>
           <TrendingUp size={17} />{seasonLoading ? "조회 중..." : "채용 시즌 조회"}

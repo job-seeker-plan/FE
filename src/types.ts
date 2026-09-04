@@ -32,6 +32,15 @@ export type JobEvent = {
   event_date: string;
   expected_cost: number;
   memo: string;
+  source_email_id: string | null;
+};
+
+export type EmailPreviewEvent = {
+  message_id: string;
+  title: string;
+  event_type: string;
+  event_date: string;
+  memo: string;
 };
 
 export type FinancialRecord = {
@@ -88,6 +97,8 @@ export type PlanAnalysis = {
   status: Status;
   monthly_cash_flows: MonthlyCashFlow[];
   guide: string;
+  guide_personalized: boolean;
+  guide_context_count: number;
 };
 
 export type EventForm = {
@@ -108,6 +119,21 @@ export type ProfileForm = {
   target_job_month: string;
 };
 
+export type FinancialContextForm = {
+  goal: string;
+  burden: string;
+  pledge: string;
+  first_question: string;
+};
+
+export type FinancialContext = {
+  text: string;
+  data_type: string;
+  related_category: string;
+  emotion_tag: string | null;
+  urgency_level: string;
+};
+
 export type RecordForm = {
   month: string;
   spend: string;
@@ -121,14 +147,10 @@ export type JobFilter = {
   jobMajorCategory: string;
   jobMinorCategory: string;
   regions: string[];
-  career: string;
   workType: string;
   education: string;
   employmentType: string;
-  minSalary: string;
-  maxSalary: string;
-  salaryPublic: boolean;
-  quick: { entryLevel: boolean; remote: boolean; salaryVisible: boolean; recent: boolean; closingSoon: boolean };
+  quick: { entryLevel: boolean; remote: boolean; recent: boolean; closingSoon: boolean };
   companySize: string;
   industry: string;
   techStack: string;

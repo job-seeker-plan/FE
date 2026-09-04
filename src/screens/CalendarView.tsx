@@ -1,23 +1,32 @@
 import React, { useState } from "react";
-import type { EventForm, FinanceTransaction, JobEvent, PlanAnalysis, TransactionForm, UserProfile } from "../types";
+import type { EmailPreviewEvent, EventForm, FinanceTransaction, JobEvent, PlanAnalysis, TransactionForm, UserProfile } from "../types";
 import { DayDetailModal } from "../components/DayDetailModal";
 import { EventFormPanel } from "../components/EventFormPanel";
 import { TransactionFormPanel } from "../components/TransactionFormPanel";
+import { EmailImportModal } from "../components/EmailImportModal";
 import { ScheduleCalendarView } from "./ScheduleCalendarView";
 import { FinanceCalendarView } from "./FinanceCalendarView";
 
 type CalendarTab = "schedule" | "finance";
 
+type EmailImport = {
+  isOpen: boolean; loading: boolean; candidates: EmailPreviewEvent[]; error: string | null;
+  importing: boolean; importNotice: string | null;
+  openImport: () => Promise<void>; close: () => void; importSelected: (selected: EmailPreviewEvent[]) => Promise<void>;
+};
+
 export function CalendarView({
   profile, plan,
   events, eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, editingEventId,
   financeTransactions, transactionForm, setTransactionForm, addTransaction, updateTransaction, deleteTransaction, cancelTransactionEdit, editingTransactionId, transactionNotice,
-  calendarMonth, setCalendarMonth, monthlyEventCost, eventNotice
+  calendarMonth, setCalendarMonth, monthlyEventCost, eventNotice,
+  canImportEmail, emailImport
 }: {
   profile: UserProfile; plan: PlanAnalysis | null;
   events: JobEvent[]; eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: (eventId?: string) => Promise<void>; cancelEdit: () => void; editingEventId: string | null;
   financeTransactions: FinanceTransaction[]; transactionForm: TransactionForm; setTransactionForm: React.Dispatch<React.SetStateAction<TransactionForm>>; addTransaction: () => Promise<void>; updateTransaction: () => Promise<void>; deleteTransaction: (id?: string) => Promise<void>; cancelTransactionEdit: () => void; editingTransactionId: string | null; transactionNotice?: string | null;
   calendarMonth: string; setCalendarMonth: React.Dispatch<React.SetStateAction<string>>; monthlyEventCost: Array<[string, number]>; eventNotice?: string | null;
+  canImportEmail?: boolean; emailImport?: EmailImport;
 }) {
   const [calendarTab, setCalendarTab] = useState<CalendarTab>("schedule");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -70,6 +79,7 @@ export function CalendarView({
           events={events} eventForm={eventForm} setEventForm={setEventForm} addEvent={addEvent} updateEvent={updateEvent} deleteEvent={deleteEvent}
           cancelEdit={cancelEdit} editingEventId={editingEventId} calendarMonth={calendarMonth} setCalendarMonth={setCalendarMonth}
           monthlyEventCost={monthlyEventCost} eventNotice={eventNotice} onDayClick={setSelectedDate} onEditEvent={openEditEvent}
+          canImportEmail={canImportEmail} onOpenEmailImport={emailImport?.openImport}
         />
       ) : (
         <FinanceCalendarView
@@ -122,6 +132,14 @@ export function CalendarView({
             />
           </div>
         </div>
+      )}
+
+      {emailImport?.isOpen && (
+        <EmailImportModal
+          loading={emailImport.loading} candidates={emailImport.candidates} error={emailImport.error}
+          importing={emailImport.importing} importNotice={emailImport.importNotice}
+          onImport={emailImport.importSelected} onClose={emailImport.close}
+        />
       )}
     </>
   );

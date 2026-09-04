@@ -9,7 +9,10 @@ import { viewTitle } from "./viewTitle";
 import type {
   AuthProvider,
   AuthUser,
+  EmailPreviewEvent,
   EventForm,
+  FinancialContext,
+  FinancialContextForm,
   FinanceTransaction,
   JobEvent,
   MatchedPolicy,
@@ -19,6 +22,7 @@ import type {
   UserProfile,
   ViewKey
 } from "./types";
+import { useEmailImport } from "./hooks/useEmailImport";
 
 import { AppFrame } from "./components/AppFrame";
 import { LoginScreen } from "./screens/LoginScreen";
@@ -27,6 +31,26 @@ import { JobsView } from "./screens/JobsView";
 import { CalendarView } from "./screens/CalendarView";
 import { PoliciesView } from "./screens/PoliciesView";
 import { SettingsView } from "./screens/SettingsView";
+
+const CONTEXT_DATA_TYPE_TO_FIELD: Record<string, keyof FinancialContextForm> = {
+  goal: "goal",
+  spending_concern: "burden",
+  pledge: "pledge",
+  assistant_question: "first_question"
+};
+
+// Saved text is "<라벨>: <원래 선택/입력값>" (see buildContextPayload below) so the
+// edit form can show back exactly what the user picked, not the composed sentence.
+function contextsToForm(contexts: FinancialContext[]): FinancialContextForm {
+  const form: FinancialContextForm = { goal: "", burden: "", pledge: "", first_question: "" };
+  for (const context of contexts) {
+    const field = CONTEXT_DATA_TYPE_TO_FIELD[context.data_type];
+    if (!field) continue;
+    const separatorIndex = context.text.indexOf(": ");
+    form[field] = separatorIndex >= 0 ? context.text.slice(separatorIndex + 2) : context.text;
+  }
+  return form;
+}
 
 function App() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
@@ -51,10 +75,12 @@ function App() {
     monthly_income_for_policy: "",
     target_job_month: ""
   });
+  const [financialContextForm, setFinancialContextForm] = useState<FinancialContextForm>({ goal: "", burden: "", pledge: "", first_question: "" });
   const [selectedPolicyIds, setSelectedPolicyIds] = useState<string[]>([]);
   const [confirmedPolicyIds, setConfirmedPolicyIds] = useState<string[]>([]);
   const [profileNotice, setProfileNotice] = useState<string | null>(null);
   const [settingsNotice, setSettingsNotice] = useState<string | null>(null);
+  const [contextNotice, setContextNotice] = useState<string | null>(null);
   const [eventNotice, setEventNotice] = useState<string | null>(null);
   const [transactionNotice, setTransactionNotice] = useState<string | null>(null);
   const [policyNotice, setPolicyNotice] = useState<string | null>(null);
@@ -71,16 +97,18 @@ function App() {
         setPolicies([]);
         return;
       }
-      const [nextPlan, nextEvents, nextTransactions, nextPolicies] = await Promise.all([
+      const [nextPlan, nextEvents, nextTransactions, nextPolicies, nextContexts] = await Promise.all([
         optionalRequest<PlanAnalysis>("/plan"),
         optionalRequest<JobEvent[]>("/events"),
         optionalRequest<FinanceTransaction[]>("/transactions"),
-        optionalRequest<MatchedPolicy[]>("/policies/matches")
+        optionalRequest<MatchedPolicy[]>("/policies/matches"),
+        optionalRequest<FinancialContext[]>("/financial-contexts")
       ]);
       setPlan(nextPlan);
       setEvents(nextEvents ?? []);
       setFinanceTransactions(nextTransactions ?? []);
       setPolicies(nextPolicies ?? []);
+      setFinancialContextForm(contextsToForm(nextContexts ?? []));
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "알 수 없는 오류가 발생했습니다.");
     }
@@ -169,6 +197,24 @@ function App() {
     setEventForm({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
     setEventNotice(null);
   }
+
+  async function importEmailEvents(selected: EmailPreviewEvent[]) {
+    const createdEvents = await Promise.all(selected.map((candidate) => request<JobEvent>("/events", {
+      method: "POST",
+      body: JSON.stringify({
+        title: candidate.title,
+        event_type: candidate.event_type,
+        event_date: candidate.event_date,
+        expected_cost: 0,
+        memo: candidate.memo,
+        source_email_id: candidate.message_id
+      })
+    })));
+    setEvents((current) => [...current, ...createdEvents].sort((left, right) => left.event_date.localeCompare(right.event_date)));
+    void refreshPlan();
+  }
+
+  const emailImport = useEmailImport(importEmailEvents);
 
   async function confirmSelectedPolicies() {
     const selectedPolicies = policies.filter((policy) => selectedPolicyIds.includes(policy.id));
@@ -272,10 +318,45 @@ function App() {
     });
   }
 
+  function buildContextPayload(context: FinancialContextForm) {
+    return [
+      context.goal && { text: `취업 준비 목표: ${context.goal}`, data_type: "goal", related_category: "cashflow", urgency_level: "normal" },
+      context.burden && { text: `부담을 느끼는 지출: ${context.burden}`, data_type: "spending_concern", related_category: "cashflow", urgency_level: "high" },
+      context.pledge.trim() && { text: `사용자 다짐: ${context.pledge.trim()}`, data_type: "pledge", related_category: "cashflow", urgency_level: "normal" },
+      context.first_question && { text: `처음 받고 싶은 금융 도움: ${context.first_question}`, data_type: "assistant_question", related_category: "cashflow", urgency_level: "normal" }
+    ].filter(Boolean);
+  }
+
+  async function saveFinancialContexts(context: FinancialContextForm) {
+    const contexts = buildContextPayload(context);
+    if (contexts.length === 0) return;
+    try {
+      await request("/financial-contexts", { method: "POST", body: JSON.stringify({ contexts }) });
+    } catch {
+      // Optional personalization input must never block onboarding completion.
+    }
+  }
+
+  async function updateFinancialContexts(context: FinancialContextForm) {
+    try {
+      setContextNotice(null);
+      const contexts = buildContextPayload(context);
+      if (contexts.length === 0) {
+        setContextNotice("선택된 항목이 없어요.");
+        return;
+      }
+      await request("/financial-contexts", { method: "POST", body: JSON.stringify({ contexts }) });
+      setContextNotice("저장되었습니다. 다음 가이드부터 반영돼요.");
+    } catch {
+      setContextNotice("저장하지 못했어요. 잠시 후 다시 시도해 주세요.");
+    }
+  }
+
   async function saveProfile() {
     try {
       setProfileNotice(null);
       await submitProfile(profileForm);
+      await saveFinancialContexts(financialContextForm);
       setActiveView("calendar");
       await loadDashboard();
     } catch {
@@ -320,7 +401,7 @@ function App() {
   }
 
   if (!profile) {
-    return <Onboarding authUser={authUser} profileForm={profileForm} setProfileForm={setProfileForm} saveProfile={saveProfile} submitNotice={profileNotice} />;
+    return <Onboarding authUser={authUser} profileForm={profileForm} setProfileForm={setProfileForm} contextForm={financialContextForm} setContextForm={setFinancialContextForm} saveProfile={saveProfile} submitNotice={profileNotice} />;
   }
 
   const shared = {
@@ -352,7 +433,9 @@ function App() {
     monthlyEventCost,
     calendarMonth,
     setCalendarMonth,
-    eventNotice
+    eventNotice,
+    canImportEmail: authUser.provider === "google",
+    emailImport
   };
 
   return (
@@ -360,7 +443,7 @@ function App() {
       {activeView === "jobs" && <JobsView />}
       {activeView === "calendar" && <CalendarView {...shared} />}
       {activeView === "policies" && <PoliciesView {...shared} />}
-      {activeView === "settings" && <SettingsView profile={profile} onLogout={logout} updateProfile={updateProfile} updateNotice={settingsNotice} />}
+      {activeView === "settings" && <SettingsView profile={profile} onLogout={logout} updateProfile={updateProfile} updateNotice={settingsNotice} contextForm={financialContextForm} setContextForm={setFinancialContextForm} updateFinancialContexts={updateFinancialContexts} contextNotice={contextNotice} />}
     </AppFrame>
   );
 }

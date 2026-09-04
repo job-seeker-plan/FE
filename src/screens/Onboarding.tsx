@@ -1,9 +1,10 @@
 import React from "react";
 import { BadgeCheck, ShieldCheck } from "lucide-react";
-import type { AuthUser, ProfileForm } from "../types";
+import type { AuthUser, FinancialContextForm, ProfileForm } from "../types";
 import { ProfileFields } from "../components/ProfileFields";
+import { FinancialContextFields } from "../components/FinancialContextFields";
 
-export function Onboarding({ authUser, profileForm, setProfileForm, saveProfile, submitNotice }: { authUser: AuthUser; profileForm: ProfileForm; setProfileForm: React.Dispatch<React.SetStateAction<ProfileForm>>; saveProfile: () => Promise<void>; submitNotice?: string | null }) {
+export function Onboarding({ authUser, profileForm, setProfileForm, contextForm, setContextForm, saveProfile, submitNotice }: { authUser: AuthUser; profileForm: ProfileForm; setProfileForm: React.Dispatch<React.SetStateAction<ProfileForm>>; contextForm: FinancialContextForm; setContextForm: React.Dispatch<React.SetStateAction<FinancialContextForm>>; saveProfile: () => Promise<void>; submitNotice?: string | null }) {
   const canSubmit = authUser.user_id && profileForm.available_cash && profileForm.monthly_income && profileForm.age && profileForm.region && profileForm.target_job_month;
 
   return (
@@ -16,8 +17,9 @@ export function Onboarding({ authUser, profileForm, setProfileForm, saveProfile,
       <section className="onboarding-layout">
         <aside className="onboarding-steps">
           <div className="step-item active"><span>1</span><strong>자금</strong><small>가용자금과 월 수입</small></div>
-          <div className="step-item active"><span>2</span><strong>목표</strong><small>취업 목표월과 기본 정보</small></div>
-          <div className="step-item"><span>3</span><strong>정책</strong><small>지역·소득 조건</small></div>
+          <div className="step-item active"><span>2</span><strong>목표</strong><small>취업 목표와 지출 부담</small></div>
+          <div className="step-item active"><span>3</span><strong>다짐</strong><small>선택 입력 · 건너뛸 수 있어요</small></div>
+          <div className="step-item active"><span>4</span><strong>AI 시작</strong><small>받고 싶은 도움 선택</small></div>
         </aside>
 
         <section className="panel setup-panel">
@@ -37,6 +39,11 @@ export function Onboarding({ authUser, profileForm, setProfileForm, saveProfile,
           </div>
 
           <ProfileFields profileForm={profileForm} setProfileForm={setProfileForm} />
+
+          <div className="context-onboarding">
+            <div><span className="section-kicker">Optional personal context</span><h3>가이드에 반영할 내용을 골라주세요</h3><p>선택한 내용과 직접 입력한 다짐만 개인화 가이드에 사용돼요. 나중에 설정에서 언제든 바꿀 수 있어요.</p></div>
+            <FinancialContextFields contextForm={contextForm} setContextForm={setContextForm} />
+          </div>
 
           <div className="setup-actions">
             <div>
