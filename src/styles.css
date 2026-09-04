@@ -489,7 +489,7 @@ button.preset.active {
 }
 
 .job-primary-filters {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin-bottom: 12px;
 }
 
@@ -520,6 +520,13 @@ button.preset.active {
   background: #f8fbff;
   font-weight: 700;
 }
+
+.job-primary-field input {
+  min-height: 48px;
+  border-color: #b9c9e2;
+  background: #f8fbff;
+}
+
 
 .salary-range {
   display: flex;
@@ -652,6 +659,83 @@ button.preset.active {
 .jobs-empty-state span {
   font-size: 13px;
 }
+
+.jobs-search-error {
+  margin: 0;
+  padding: 12px 14px;
+  color: #b42318;
+  border: 1px solid #fecdca;
+  border-radius: 8px;
+  background: #fffbfa;
+  font-size: 13px;
+}
+
+.job-result-list {
+  display: grid;
+  gap: 10px;
+}
+
+.jobs-result-note {
+  margin: 0 0 2px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.job-result-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.8fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.job-result-card > div:first-child,
+.job-result-meta {
+  display: grid;
+  gap: 5px;
+}
+
+.job-result-card strong {
+  color: #1e293b;
+}
+
+.job-result-card span,
+.job-result-card a {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.job-result-card a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #2563eb;
+  white-space: nowrap;
+  font-weight: 800;
+}
+
+.job-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.job-pagination button {
+  min-width: 38px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.job-pagination button.active {
+  color: #fff;
+  background: #2563eb;
+}
+
 
 .calendar-layout {
   display: grid;

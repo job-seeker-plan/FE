@@ -11,12 +11,10 @@ import type {
   AuthUser,
   EventForm,
   FinanceTransaction,
-  FinancialRecord,
   JobEvent,
   MatchedPolicy,
   PlanAnalysis,
   ProfileForm,
-  RecordForm,
   TransactionForm,
   UserProfile,
   ViewKey
@@ -28,7 +26,6 @@ import { Onboarding } from "./screens/Onboarding";
 import { JobsView } from "./screens/JobsView";
 import { CalendarView } from "./screens/CalendarView";
 import { PoliciesView } from "./screens/PoliciesView";
-import { RecordsView } from "./screens/RecordsView";
 import { SettingsView } from "./screens/SettingsView";
 
 function App() {
@@ -40,7 +37,6 @@ function App() {
   const [plan, setPlan] = useState<PlanAnalysis | null>(null);
   const [events, setEvents] = useState<JobEvent[]>([]);
   const [financeTransactions, setFinanceTransactions] = useState<FinanceTransaction[]>([]);
-  const [financialRecords, setFinancialRecords] = useState<FinancialRecord[]>([]);
   const [policies, setPolicies] = useState<MatchedPolicy[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(currentMonthValue());
@@ -55,13 +51,6 @@ function App() {
     monthly_income_for_policy: "",
     target_job_month: ""
   });
-  const [recordForm, setRecordForm] = useState<RecordForm>({
-    month: "",
-    spend: "",
-    bill: "",
-    balance: "",
-    income: ""
-  });
   const [selectedPolicyIds, setSelectedPolicyIds] = useState<string[]>([]);
   const [confirmedPolicyIds, setConfirmedPolicyIds] = useState<string[]>([]);
   const [confirmedSupport, setConfirmedSupport] = useState({ month: "", amount: "" });
@@ -70,7 +59,6 @@ function App() {
   const [settingsNotice, setSettingsNotice] = useState<string | null>(null);
   const [eventNotice, setEventNotice] = useState<string | null>(null);
   const [transactionNotice, setTransactionNotice] = useState<string | null>(null);
-  const [recordNotice, setRecordNotice] = useState<string | null>(null);
   const [policyNotice, setPolicyNotice] = useState<string | null>(null);
 
   async function loadDashboard() {
@@ -82,21 +70,18 @@ function App() {
         setPlan(null);
         setEvents([]);
         setFinanceTransactions([]);
-        setFinancialRecords([]);
         setPolicies([]);
         return;
       }
-      const [nextPlan, nextEvents, nextTransactions, nextRecords, nextPolicies] = await Promise.all([
+      const [nextPlan, nextEvents, nextTransactions, nextPolicies] = await Promise.all([
         optionalRequest<PlanAnalysis>("/plan"),
         optionalRequest<JobEvent[]>("/events"),
         optionalRequest<FinanceTransaction[]>("/transactions"),
-        optionalRequest<FinancialRecord[]>("/financial-records"),
         optionalRequest<MatchedPolicy[]>("/policies/matches")
       ]);
       setPlan(nextPlan);
       setEvents(nextEvents ?? []);
       setFinanceTransactions(nextTransactions ?? []);
-      setFinancialRecords(nextRecords ?? []);
       setPolicies(nextPolicies ?? []);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "알 수 없는 오류가 발생했습니다.");
@@ -273,27 +258,6 @@ function App() {
     setTransactionNotice(null);
   }
 
-  async function saveFinancialRecord() {
-    if (!recordForm.month || !recordForm.spend || !recordForm.bill || !recordForm.balance) return;
-    try {
-      setRecordNotice(null);
-      await request<FinancialRecord>("/financial-records", {
-        method: "POST",
-        body: JSON.stringify({
-          month: recordForm.month,
-          spend: toWon(recordForm.spend),
-          bill: toWon(recordForm.bill),
-          balance: toWon(recordForm.balance),
-          income: toWon(recordForm.income)
-        })
-      });
-      setRecordForm({ month: "", spend: "", bill: "", balance: "", income: "" });
-      await loadDashboard();
-    } catch {
-      setRecordNotice("기록을 저장하지 못했어요. 값을 다시 확인해 주세요.");
-    }
-  }
-
   async function runScenario() {
     if (confirmedSupport.amount && (!confirmedSupport.month || selectedPolicyIds.length === 0)) {
       setError("확정 정책 지원금을 계산하려면 정책을 하나 이상 선택하고 지급월을 입력하세요.");
@@ -384,7 +348,6 @@ function App() {
     plan,
     events,
     financeTransactions,
-    financialRecords,
     policies,
     selectedPolicyIds,
     setSelectedPolicyIds,
@@ -410,14 +373,10 @@ function App() {
     transactionNotice,
     runScenario,
     scenario,
-    recordForm,
-    setRecordForm,
-    saveFinancialRecord,
     monthlyEventCost,
     calendarMonth,
     setCalendarMonth,
-    eventNotice,
-    recordNotice
+    eventNotice
   };
 
   return (
@@ -425,7 +384,6 @@ function App() {
       {activeView === "jobs" && <JobsView />}
       {activeView === "calendar" && <CalendarView {...shared} />}
       {activeView === "policies" && <PoliciesView {...shared} />}
-      {activeView === "records" && <RecordsView {...shared} />}
       {activeView === "settings" && <SettingsView profile={profile} onLogout={logout} updateProfile={updateProfile} updateNotice={settingsNotice} />}
     </AppFrame>
   );
