@@ -520,6 +520,25 @@ button.preset.active {
   margin-bottom: 16px;
 }
 
+.policy-page-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 16px;
+}
+
+.policy-list-column {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.policy-pagination-bottom {
+  justify-content: center;
+  padding: 4px 0 8px;
+}
+
 .dashboard-grid.three {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -1397,6 +1416,7 @@ button.danger {
 
   .summary-strip,
   .dashboard-grid,
+  .policy-page-layout,
   .dashboard-grid.three {
     grid-template-columns: 1fr;
   }

@@ -21,7 +21,7 @@ const linkareerJobCategory: Record<string, string> = {
 
 const linkareerRegion: Record<string, string> = {
   "서울": "2", "부산": "3", "대구": "4", "인천": "5", "광주": "6", "대전": "7", "울산": "8", "경기": "9", "강원": "10",
-  "충북": "11", "충남": "11", "전북": "25", "전남": "25", "경북": "26", "경남": "26", "제주": "27", "세종": "28"
+  "충북": "11", "충남": "11", "전북": "25", "전남": "25", "경북": "26", "경남": "26", "제주": "27", "세종": "28", "해외": "29"
 };
 
 function pageNumbers(currentPage: number, totalPages: number) {

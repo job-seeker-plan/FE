@@ -38,24 +38,26 @@ export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedP
   React.useEffect(() => { setPage(1); }, [keyword, region]);
 
   return (
-    <section className="dashboard-grid">
-      <PolicyPanel policies={visiblePolicies} selectedPolicyIds={selectedPolicyIds} setSelectedPolicyIds={setSelectedPolicyIds} onHidePolicy={hidePolicy} />
-      <Panel title="정책 목록 관리">
+    <section className="policy-page-layout">
+      <div className="policy-list-column">
+        <Panel title="정책 목록 관리">
         <div className="policy-filter-grid">
           <label><span>지역</span><select value={region} onChange={(event) => setRegion(event.target.value)}><option>전체 지역</option>{REGION_OPTIONS.map(([, label]) => <option key={label}>{label}</option>)}</select></label>
           <label><span>정책명·내용 검색</span><input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="예: 취업, 교육, 지원금" /></label>
         </div>
         <p className="muted policy-result-summary">총 {filteredPolicies.length}개 정책 · {page} / {pageCount}페이지</p>
-        <div className="policy-pagination" aria-label="정책 페이지 이동">
-          <button className="secondary" disabled={page === 1} onClick={() => setPage((current) => current - 1)}>이전</button>
-          {Array.from({ length: pageCount }, (_, index) => index + 1).map((number) => <button key={number} className={number === page ? "" : "secondary"} onClick={() => setPage(number)}>{number}</button>)}
-          <button className="secondary" disabled={page === pageCount} onClick={() => setPage((current) => current + 1)}>다음</button>
-        </div>
         {hiddenPolicies.length > 0 && <div className="hidden-policy-section">
           <button className="secondary" onClick={() => setShowHiddenPolicies((current) => !current)}>숨김 정책 {showHiddenPolicies ? "닫기" : `${hiddenPolicies.length}개 보기`}</button>
           {showHiddenPolicies && <div className="hidden-policy-list">{hiddenPolicies.map((policy) => <div className="hidden-policy-row" key={policy.id}><span>{policy.name}</span><button className="secondary" onClick={() => restorePolicy(policy.id)}>다시 표시</button></div>)}</div>}
         </div>}
-      </Panel>
+        </Panel>
+        <PolicyPanel policies={visiblePolicies} selectedPolicyIds={selectedPolicyIds} setSelectedPolicyIds={setSelectedPolicyIds} onHidePolicy={hidePolicy} />
+        <div className="policy-pagination policy-pagination-bottom" aria-label="정책 페이지 이동">
+          <button className="secondary" disabled={page === 1} onClick={() => setPage((current) => current - 1)}>이전</button>
+          {Array.from({ length: pageCount }, (_, index) => index + 1).map((number) => <button key={number} className={number === page ? "" : "secondary"} onClick={() => setPage(number)}>{number}</button>)}
+          <button className="secondary" disabled={page === pageCount} onClick={() => setPage((current) => current + 1)}>다음</button>
+        </div>
+      </div>
       <Panel title="선택 정책 확정">
         <p className="muted">마감일이 있는 정책은 자동으로 취업 캘린더에 등록됩니다.</p>
         <button onClick={() => void confirmSelectedPolicies()}>선택 정책 확정</button>
