@@ -90,7 +90,7 @@ export function ScheduleCalendarView({ events, eventForm, setEventForm, addEvent
               <span>일정 유형<strong>{eventTypeLabels[selectedEvent.event_type]}</strong></span>
               <span>일정 날짜<strong>{selectedEvent.event_date}</strong></span>
               <span>예상 비용<strong>{formatWon(selectedEvent.expected_cost)}</strong></span>
-              {selectedEvent.memo && <span>메모<strong>{selectedEvent.memo}</strong></span>}
+              {selectedEvent.memo && !selectedEvent.memo.startsWith("policy:") && <span>메모<strong>{selectedEvent.memo}</strong></span>}
             </div>
             <div className="button-row modal-actions">
               <button onClick={() => { onEditEvent(selectedEvent); setSelectedEvent(null); }}><Pencil size={16} />수정</button>
