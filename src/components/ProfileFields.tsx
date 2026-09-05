@@ -3,6 +3,7 @@ import type { ProfileForm } from "../types";
 import { regions } from "../constants";
 import { currentMonthValue, formatManwon } from "../utils";
 import { YearMonthSelect } from "./YearMonthSelect";
+import { Select } from "./Select";
 
 // Shared by the onboarding form and the settings edit form — both collect the
 // same profile fields, just with different surrounding chrome and submit action.
@@ -46,10 +47,7 @@ export function ProfileFields({ profileForm, setProfileForm }: { profileForm: Pr
       <div className="form-row">
         <label>
           <span>거주지역</span>
-          <select value={profileForm.region} onChange={(event) => setProfileForm({ ...profileForm, region: event.target.value })}>
-            <option value="">선택</option>
-            {regions.map((region) => <option key={region} value={region}>{region}</option>)}
-          </select>
+          <Select value={profileForm.region} onChange={(value) => setProfileForm({ ...profileForm, region: value })} options={[{ value: "", label: "선택" }, ...regions.map((region) => ({ value: region, label: region }))]} />
         </label>
         <label>
           <span>정책 매칭용 월소득</span>

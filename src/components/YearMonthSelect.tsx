@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Select } from "./Select";
 
 // <input type="month"> falls back to a plain text field in Safari, so a typed
 // value like "13" can reach the backend instead of a guaranteed "YYYY-MM"
@@ -58,14 +59,16 @@ export function YearMonthSelect({
 
   return (
     <div className="year-month-select">
-      <select value={year} onChange={(event) => update(event.target.value, event.target.value === minYear && month < minMonth ? "" : month)}>
-        {allowEmpty && <option value="">연도</option>}
-        {years.map((y) => <option key={y} value={String(y)}>{y}년</option>)}
-      </select>
-      <select value={month} onChange={(event) => update(year, event.target.value)}>
-        {allowEmpty && <option value="">월</option>}
-        {months.map((m) => <option key={m} value={m}>{Number(m)}월</option>)}
-      </select>
+      <Select
+        value={year}
+        onChange={(nextYear) => update(nextYear, nextYear === minYear && month < minMonth ? "" : month)}
+        options={[...(allowEmpty ? [{ value: "", label: "연도" }] : []), ...years.map((y) => ({ value: String(y), label: `${y}년` }))]}
+      />
+      <Select
+        value={month}
+        onChange={(nextMonth) => update(year, nextMonth)}
+        options={[...(allowEmpty ? [{ value: "", label: "월" }] : []), ...months.map((m) => ({ value: m, label: `${Number(m)}월` }))]}
+      />
     </div>
   );
 }

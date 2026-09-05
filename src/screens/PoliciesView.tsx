@@ -2,6 +2,7 @@ import React from "react";
 import type { MatchedPolicy } from "../types";
 import { Panel } from "../components/Panel";
 import { PolicyPanel } from "../components/PolicyPanel";
+import { Select } from "../components/Select";
 import type { JobEvent } from "../types";
 import { extractPolicyDeadline, pageNumbers } from "../utils";
 
@@ -42,7 +43,7 @@ export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedP
       <div className="policy-list-column">
         <Panel title="정책 목록 관리">
         <div className="policy-filter-grid">
-          <label><span>지역</span><select value={region} onChange={(event) => setRegion(event.target.value)}><option>전체 지역</option>{REGION_OPTIONS.map(([, label]) => <option key={label}>{label}</option>)}</select></label>
+          <label><span>지역</span><Select value={region} onChange={setRegion} options={[{ value: "전체 지역", label: "전체 지역" }, ...REGION_OPTIONS.map(([, label]) => ({ value: label, label }))]} /></label>
           <label><span>정책명·내용 검색</span><input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="예: 취업, 교육, 지원금" /></label>
         </div>
         <p className="muted policy-result-summary">총 {filteredPolicies.length}개 정책 · {page} / {pageCount}페이지</p>
