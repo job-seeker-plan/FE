@@ -2,6 +2,12 @@ import React from "react";
 import type { Status, ViewKey } from "../types";
 import { navItems } from "../constants";
 
+const statusLabels: Record<Status, string> = {
+  stable: "안정",
+  caution: "주의",
+  risk: "위험",
+};
+
 export function AppFrame({ activeView, setActiveView, title, status, children }: { activeView: ViewKey; setActiveView: (view: ViewKey) => void; title: string; status: Status | null; children: React.ReactNode }) {
   return (
     <main className="app-shell">
@@ -29,7 +35,7 @@ export function AppFrame({ activeView, setActiveView, title, status, children }:
             <p className="eyebrow">AI Financial Planner</p>
             <h1>{title}</h1>
           </div>
-          {status && <div className={`status ${status}`}>{status.toUpperCase()}</div>}
+          {status && <div className={`status ${status}`}>잔고 상태: {statusLabels[status]}</div>}
         </header>
         {children}
       </section>

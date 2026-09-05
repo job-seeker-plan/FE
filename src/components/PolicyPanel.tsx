@@ -7,7 +7,7 @@ export function PolicyPanel({ policies, selectedPolicyIds, setSelectedPolicyIds,
   return (
     <Panel title="추천 정책">
       <div className="item-list">
-        {policies.length === 0 && <p className="muted">정책 API 키를 설정하면 추천 정책이 표시됩니다.</p>}
+        {policies.length === 0 && <p className="muted">검색 결과가 없습니다.</p>}
         {policies.map((policy) => (
           <div className="policy" key={policy.id}>
             <input
