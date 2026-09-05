@@ -61,6 +61,7 @@ export type FinanceTransaction = {
   category: string;
   amount: number;
   memo: string;
+  deduct_from_available_cash: boolean;
 };
 
 export type MatchedPolicy = {
@@ -179,6 +180,7 @@ export type TransactionForm = {
   category: string;
   amount: string;
   memo: string;
+  deduct_from_available_cash: boolean;
 };
 
 export type HiringSeasonMonthly = {

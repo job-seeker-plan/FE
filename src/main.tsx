@@ -65,7 +65,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(currentMonthValue());
   const [eventForm, setEventForm] = useState<EventForm>({ title: "", event_type: "interview", event_date: "", expected_cost: "" });
-  const [transactionForm, setTransactionForm] = useState<TransactionForm>({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "" });
+  const [transactionForm, setTransactionForm] = useState<TransactionForm>({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "", deduct_from_available_cash: true });
   const [profileForm, setProfileForm] = useState<ProfileForm>({
     user_id: "",
     available_cash: "",
@@ -291,7 +291,8 @@ function App() {
         body: JSON.stringify({ ...transactionForm, amount: toWon(transactionForm.amount), memo: transactionForm.memo || "" })
       });
       setFinanceTransactions((current) => [...current, saved].sort((left, right) => left.occurred_on.localeCompare(right.occurred_on)));
-      setTransactionForm({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "" });
+      setTransactionForm({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "", deduct_from_available_cash: true });
+      await refreshProfile();
     } catch {
       setTransactionNotice("가계부 내역을 저장하지 못했어요. 입력값을 다시 확인해 주세요.");
     }
@@ -303,10 +304,11 @@ function App() {
       setTransactionNotice(null);
       const updated = await request<FinanceTransaction>(`/transactions/${transactionForm.id}`, {
         method: "PUT",
-        body: JSON.stringify({ occurred_on: transactionForm.occurred_on, type: transactionForm.type, category: transactionForm.category, amount: toWon(transactionForm.amount), memo: transactionForm.memo || "" })
+        body: JSON.stringify({ occurred_on: transactionForm.occurred_on, type: transactionForm.type, category: transactionForm.category, amount: toWon(transactionForm.amount), memo: transactionForm.memo || "", deduct_from_available_cash: transactionForm.deduct_from_available_cash })
       });
       setFinanceTransactions((current) => current.map((transaction) => transaction.id === updated.id ? updated : transaction).sort((left, right) => left.occurred_on.localeCompare(right.occurred_on)));
-      setTransactionForm({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "" });
+      setTransactionForm({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "", deduct_from_available_cash: true });
+      await refreshProfile();
     } catch {
       setTransactionNotice("가계부 내역을 수정하지 못했어요. 입력값을 다시 확인해 주세요.");
     }
@@ -318,14 +320,20 @@ function App() {
       setTransactionNotice(null);
       await request<void>(`/transactions/${transactionId}`, { method: "DELETE" });
       setFinanceTransactions((current) => current.filter((transaction) => transaction.id !== transactionId));
-      setTransactionForm({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "" });
+      setTransactionForm({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "", deduct_from_available_cash: true });
+      await refreshProfile();
     } catch {
       setTransactionNotice("가계부 내역을 삭제하지 못했어요.");
     }
   }
 
+  async function refreshProfile() {
+    const nextProfile = await optionalRequest<UserProfile>("/profile");
+    if (nextProfile) setProfile(nextProfile);
+  }
+
   function cancelTransactionEdit() {
-    setTransactionForm({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "" });
+    setTransactionForm({ occurred_on: "", type: "expense", category: "food", amount: "", memo: "", deduct_from_available_cash: true });
     setTransactionNotice(null);
   }
 

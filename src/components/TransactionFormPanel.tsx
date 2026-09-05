@@ -47,6 +47,18 @@ export function TransactionFormPanel({ transactionForm, setTransactionForm, addT
       <div className="form-row single">
         <input placeholder="메모 (선택)" value={transactionForm.memo} onChange={(event) => setTransactionForm({ ...transactionForm, memo: event.target.value })} />
       </div>
+      {transactionForm.type === "expense" && (
+        <div className="form-row single">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={transactionForm.deduct_from_available_cash}
+              onChange={(event) => setTransactionForm({ ...transactionForm, deduct_from_available_cash: event.target.checked })}
+            />
+            <span>가용자금에서 차감하기</span>
+          </label>
+        </div>
+      )}
       <div className="button-row">
         {editing ? <>
           <button onClick={updateTransaction}><Pencil size={16} />수정 저장</button>

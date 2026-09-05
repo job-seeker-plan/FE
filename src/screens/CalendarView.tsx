@@ -51,13 +51,13 @@ export function CalendarView({
   }
 
   function openNewTransaction(date?: string) {
-    setTransactionForm({ occurred_on: date ?? "", type: "expense", category: "food", amount: "", memo: "" });
+    setTransactionForm({ occurred_on: date ?? "", type: "expense", category: "food", amount: "", memo: "", deduct_from_available_cash: true });
     setTransactionFormModalOpen(true);
     setSelectedDate(null);
   }
 
   function openEditTransaction(transaction: FinanceTransaction) {
-    setTransactionForm({ id: transaction.id, occurred_on: transaction.occurred_on, type: transaction.type, category: transaction.category, amount: String(Math.round(transaction.amount / 10_000)), memo: transaction.memo });
+    setTransactionForm({ id: transaction.id, occurred_on: transaction.occurred_on, type: transaction.type, category: transaction.category, amount: String(Math.round(transaction.amount / 10_000)), memo: transaction.memo, deduct_from_available_cash: transaction.deduct_from_available_cash });
     setTransactionFormModalOpen(true);
     setSelectedDate(null);
   }
