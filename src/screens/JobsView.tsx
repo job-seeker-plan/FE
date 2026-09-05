@@ -3,7 +3,9 @@ import { ChevronDown, ExternalLink, RotateCcw, Search, TrendingUp } from "lucide
 import type { CompanySuggestion, HiringSeason, JobFilter, LinkareerRecruitmentResult } from "../types";
 import { employmentTypes, jobCategoryTree, regions } from "../constants";
 import { Panel } from "../components/Panel";
+import { Select } from "../components/Select";
 import { request } from "../api";
+import { pageNumbers } from "../utils";
 
 const emptyFilter: JobFilter = {
   keyword: "", jobMajorCategory: "", regions: [], employmentType: "any", experience: "any", deadlineWithinDays: "any"
@@ -23,11 +25,6 @@ const linkareerRegion: Record<string, string> = {
   "서울": "2", "부산": "3", "대구": "4", "인천": "5", "광주": "6", "대전": "7", "울산": "8", "경기": "9", "강원": "10",
   "충북": "11", "충남": "11", "전북": "25", "전남": "25", "경북": "26", "경남": "26", "제주": "27", "세종": "28", "해외": "29"
 };
-
-function pageNumbers(currentPage: number, totalPages: number) {
-  const start = Math.max(1, Math.min(currentPage - 2, Math.max(1, totalPages - 4)));
-  return Array.from({ length: Math.min(5, totalPages - start + 1) }, (_, index) => start + index);
-}
 
 export function JobsView() {
   const [filter, setFilter] = useState<JobFilter>(emptyFilter);
@@ -154,13 +151,13 @@ export function JobsView() {
         </div>
         <div className="job-primary-filters">
           <label className="job-primary-field"><span>검색어</span><input placeholder="예: 백엔드, 마케팅, 인턴" value={filter.keyword} onChange={(event) => updateFilter("keyword", event.target.value)} /></label>
-          <label className="job-primary-field"><span>지역</span><select value={filter.regions[0] ?? ""} onChange={(event) => updateFilter("regions", event.target.value ? [event.target.value] : [])}><option value="">전체 지역</option>{regions.map((region) => <option key={region}>{region}</option>)}</select></label>
-          <label className="job-primary-field"><span>직무</span><select value={filter.jobMajorCategory} onChange={(event) => updateFilter("jobMajorCategory", event.target.value)}><option value="">전체 직무</option>{Object.keys(jobCategoryTree).map((category) => <option key={category}>{category}</option>)}</select></label>
+          <label className="job-primary-field"><span>지역</span><Select value={filter.regions[0] ?? ""} onChange={(value) => updateFilter("regions", value ? [value] : [])} options={[{ value: "", label: "전체 지역" }, ...regions.map((region) => ({ value: region, label: region }))]} /></label>
+          <label className="job-primary-field"><span>직무</span><Select value={filter.jobMajorCategory} onChange={(value) => updateFilter("jobMajorCategory", value)} options={[{ value: "", label: "전체 직무" }, ...Object.keys(jobCategoryTree).map((category) => ({ value: category, label: category }))]} /></label>
         </div>
         <div className="job-filter-row">
-          <label><span>고용 형태</span><select value={filter.employmentType} onChange={(event) => updateFilter("employmentType", event.target.value)}>{employmentTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}</select></label>
-          <label><span>경력 조건</span><select value={filter.experience} onChange={(event) => updateFilter("experience", event.target.value as JobFilter["experience"])}><option value="any">전체 경력</option><option value="entry">신입 가능</option><option value="experienced">경력직</option><option value="intern">인턴</option><option value="contract">계약직</option></select></label>
-          <label><span>마감 조건</span><select value={filter.deadlineWithinDays} onChange={(event) => updateFilter("deadlineWithinDays", event.target.value as JobFilter["deadlineWithinDays"])}><option value="any">전체 마감</option><option value="7">7일 이내 마감</option><option value="30">30일 이내 마감</option></select></label>
+          <label><span>고용 형태</span><Select value={filter.employmentType} onChange={(value) => updateFilter("employmentType", value)} options={employmentTypes} /></label>
+          <label><span>경력 조건</span><Select value={filter.experience} onChange={(value) => updateFilter("experience", value as JobFilter["experience"])} options={[{ value: "any", label: "전체 경력" }, { value: "entry", label: "신입 가능" }, { value: "experienced", label: "경력직" }, { value: "intern", label: "인턴" }, { value: "contract", label: "계약직" }]} /></label>
+          <label><span>마감 조건</span><Select value={filter.deadlineWithinDays} onChange={(value) => updateFilter("deadlineWithinDays", value as JobFilter["deadlineWithinDays"])} options={[{ value: "any", label: "전체 마감" }, { value: "7", label: "7일 이내 마감" }, { value: "30", label: "30일 이내 마감" }]} /></label>
         </div>
         <button className="job-search-button" type="button" disabled={searching} onClick={() => void searchJobs()}><Search size={17} />{searching ? "채용공고를 불러오는 중" : "조건에 맞는 공고 검색"}</button>
       </Panel>

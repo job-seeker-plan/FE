@@ -35,6 +35,11 @@ export function buildCalendarDays(monthValue: string, events: JobEvent[]) {
   });
 }
 
+export function pageNumbers(currentPage: number, totalPages: number) {
+  const start = Math.max(1, Math.min(currentPage - 2, Math.max(1, totalPages - 4)));
+  return Array.from({ length: Math.min(5, totalPages - start + 1) }, (_, index) => start + index);
+}
+
 export function extractPolicyDeadline(period: string) {
   const matches = [...period.matchAll(/(20\d{2})\s*(?:[-./년]\s*)(\d{1,2})\s*(?:[-./월]\s*)(\d{1,2})\s*일?/g)];
   const compactMatches = [...period.matchAll(/(20\d{2})(\d{2})(\d{2})/g)];

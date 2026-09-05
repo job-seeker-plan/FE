@@ -36,8 +36,7 @@ body {
 }
 
 button,
-input,
-select {
+input {
   font: inherit;
 }
 
@@ -76,8 +75,7 @@ button:disabled {
   opacity: 0.45;
 }
 
-input:not([type="checkbox"]),
-select {
+input:not([type="checkbox"]) {
   width: 100%;
   min-width: 0;
   border: 1px solid #d4dce8;
@@ -85,6 +83,101 @@ select {
   padding: 10px 12px;
   color: #182233;
   background: #fff;
+}
+
+.select-root {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.select-trigger {
+  width: 100%;
+  min-width: 0;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid #d4dce8;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #182233;
+  background: #fff;
+  font-weight: 500;
+  text-align: left;
+}
+
+.select-trigger:hover:not(:disabled) {
+  border-color: #b9c4d6;
+}
+
+.select-trigger.open,
+.select-trigger:focus-visible {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.select-value,
+.select-placeholder {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select-placeholder {
+  color: #64748b;
+}
+
+.select-chevron {
+  flex: 0 0 auto;
+  color: #64748b;
+  transition: transform 0.15s ease;
+}
+
+.select-trigger.open .select-chevron {
+  transform: rotate(180deg);
+  color: #2563eb;
+}
+
+.select-menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid #dfe5ee;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 16px 36px rgba(30, 42, 62, 0.14);
+}
+
+.select-option {
+  padding: 9px 10px;
+  border-radius: 6px;
+  color: #182233;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select-option.highlighted {
+  background: #f1f5f9;
+}
+
+.select-option.selected {
+  font-weight: 800;
+  background: #f1f5f9;
+}
+
+.select-option.disabled {
+  color: #b7c0cd;
+  cursor: not-allowed;
 }
 
 input[type="checkbox"] {
@@ -590,7 +683,7 @@ button.preset.active {
   font-weight: 800;
 }
 
-.job-primary-field select {
+.job-primary-field .select-trigger {
   min-height: 48px;
   border-color: #b9c9e2;
   background: #f8fbff;
@@ -1072,6 +1165,13 @@ button.preset.active {
   text-align: center;
 }
 
+.calendar-toolbar .icon-button-text {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  justify-self: center;
+  margin-top: 2px;
+}
+
 .calendar-toolbar input {
   max-width: 180px;
 }
@@ -1081,7 +1181,7 @@ button.preset.active {
   gap: 8px;
 }
 
-.year-month-select select {
+.year-month-select .select-root {
   min-width: 0;
   flex: 1;
 }
@@ -1482,6 +1582,15 @@ button.danger {
     font-size: 15px;
   }
 
+  .job-result-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .job-result-card a {
+    justify-self: start;
+  }
+
   .flow-row,
   .item,
   .compare {
@@ -1506,13 +1615,13 @@ button.danger {
   }
 
   input,
-  select {
+  .select-trigger {
     min-height: 44px;
   }
 
   .calendar-toolbar {
-    align-items: stretch;
-    flex-direction: column;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
   }
 
   .calendar-toolbar input {

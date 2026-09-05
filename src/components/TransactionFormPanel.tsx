@@ -4,6 +4,7 @@ import type { TransactionForm } from "../types";
 import { expenseCategoryLabels, incomeCategoryLabels } from "../constants";
 import { buildCalendarDays, currentMonthValue } from "../utils";
 import { Panel } from "./Panel";
+import { Select } from "./Select";
 
 export function TransactionFormPanel({ transactionForm, setTransactionForm, addTransaction, updateTransaction, deleteTransaction, cancelEdit, editing, notice }: { transactionForm: TransactionForm; setTransactionForm: React.Dispatch<React.SetStateAction<TransactionForm>>; addTransaction: () => Promise<void>; updateTransaction: () => Promise<void>; deleteTransaction: () => Promise<void>; cancelEdit: () => void; editing: boolean; notice?: string | null }) {
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
@@ -37,9 +38,7 @@ export function TransactionFormPanel({ transactionForm, setTransactionForm, addT
       </div>
       <div className="form-row">
         <button className="date-trigger" type="button" onClick={openDatePicker}><CalendarDays size={16} />{transactionForm.occurred_on || "날짜 선택"}</button>
-        <select value={transactionForm.category} onChange={(event) => setTransactionForm({ ...transactionForm, category: event.target.value })}>
-          {Object.entries(categoryLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-        </select>
+        <Select value={transactionForm.category} onChange={(value) => setTransactionForm({ ...transactionForm, category: value })} options={Object.entries(categoryLabels).map(([value, label]) => ({ value, label }))} />
       </div>
       <div className="form-row single">
         <label className="money-field"><span>금액</span><div className="money-input"><input type="number" min="0" value={transactionForm.amount} onChange={(event) => setTransactionForm({ ...transactionForm, amount: event.target.value })} /><span>만원</span></div></label>

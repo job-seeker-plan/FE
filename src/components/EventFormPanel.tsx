@@ -4,6 +4,7 @@ import type { EventForm } from "../types";
 import { eventTypeLabels } from "../constants";
 import { buildCalendarDays, currentMonthValue } from "../utils";
 import { Panel } from "./Panel";
+import { Select } from "./Select";
 
 export function EventFormPanel({ eventForm, setEventForm, addEvent, updateEvent, deleteEvent, cancelEdit, editing, notice }: { eventForm: EventForm; setEventForm: React.Dispatch<React.SetStateAction<EventForm>>; addEvent: () => Promise<void>; updateEvent: () => Promise<void>; deleteEvent: () => Promise<void>; cancelEdit: () => void; editing: boolean; notice?: string | null }) {
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
@@ -26,9 +27,7 @@ export function EventFormPanel({ eventForm, setEventForm, addEvent, updateEvent,
     <Panel title={editing ? "일정 수정" : "일정 등록"}>
       <div className="form-row">
         <input placeholder="일정명" value={eventForm.title} onChange={(event) => setEventForm({ ...eventForm, title: event.target.value })} />
-        <select value={eventForm.event_type} onChange={(event) => setEventForm({ ...eventForm, event_type: event.target.value })}>
-          {Object.entries(eventTypeLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-        </select>
+        <Select value={eventForm.event_type} onChange={(value) => setEventForm({ ...eventForm, event_type: value })} options={Object.entries(eventTypeLabels).map(([value, label]) => ({ value, label }))} />
       </div>
       <div className="form-row">
         <button className="date-trigger" type="button" onClick={openDatePicker}><CalendarDays size={16} />{eventForm.event_date || "날짜 선택"}</button>

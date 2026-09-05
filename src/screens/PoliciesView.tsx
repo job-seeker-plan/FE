@@ -2,8 +2,9 @@ import React from "react";
 import type { MatchedPolicy } from "../types";
 import { Panel } from "../components/Panel";
 import { PolicyPanel } from "../components/PolicyPanel";
+import { Select } from "../components/Select";
 import type { JobEvent } from "../types";
-import { extractPolicyDeadline } from "../utils";
+import { extractPolicyDeadline, pageNumbers } from "../utils";
 
 const REGION_OPTIONS = [
   ["11", "서울"], ["26", "부산"], ["27", "대구"], ["28", "인천"], ["29", "광주"], ["30", "대전"],
@@ -42,7 +43,7 @@ export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedP
       <div className="policy-list-column">
         <Panel title="정책 목록 관리">
         <div className="policy-filter-grid">
-          <label><span>지역</span><select value={region} onChange={(event) => setRegion(event.target.value)}><option>전체 지역</option>{REGION_OPTIONS.map(([, label]) => <option key={label}>{label}</option>)}</select></label>
+          <label><span>지역</span><Select value={region} onChange={setRegion} options={[{ value: "전체 지역", label: "전체 지역" }, ...REGION_OPTIONS.map(([, label]) => ({ value: label, label }))]} /></label>
           <label><span>정책명·내용 검색</span><input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="예: 취업, 교육, 지원금" /></label>
         </div>
         <p className="muted policy-result-summary">총 {filteredPolicies.length}개 정책 · {page} / {pageCount}페이지</p>
@@ -54,7 +55,7 @@ export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedP
         <PolicyPanel policies={visiblePolicies} selectedPolicyIds={selectedPolicyIds} setSelectedPolicyIds={setSelectedPolicyIds} onHidePolicy={hidePolicy} />
         <div className="policy-pagination policy-pagination-bottom" aria-label="정책 페이지 이동">
           <button className="secondary" disabled={page === 1} onClick={() => setPage((current) => current - 1)}>이전</button>
-          {Array.from({ length: pageCount }, (_, index) => index + 1).map((number) => <button key={number} className={number === page ? "" : "secondary"} onClick={() => setPage(number)}>{number}</button>)}
+          {pageNumbers(page, pageCount).map((number) => <button key={number} className={number === page ? "" : "secondary"} onClick={() => setPage(number)}>{number}</button>)}
           <button className="secondary" disabled={page === pageCount} onClick={() => setPage((current) => current + 1)}>다음</button>
         </div>
       </div>
