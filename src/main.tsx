@@ -27,6 +27,7 @@ import { useEmailImport } from "./hooks/useEmailImport";
 import { AppFrame } from "./components/AppFrame";
 import { LoginScreen } from "./screens/LoginScreen";
 import { Onboarding } from "./screens/Onboarding";
+import { OverviewView } from "./screens/OverviewView";
 import { JobsView } from "./screens/JobsView";
 import { CalendarView } from "./screens/CalendarView";
 import { PoliciesView } from "./screens/PoliciesView";
@@ -475,6 +476,7 @@ function App() {
 
   return (
     <AppFrame activeView={activeView} setActiveView={setActiveView} title={viewTitle(activeView)} status={plan?.status ?? null}>
+      {activeView === "overview" && <OverviewView {...shared} />}
       {activeView === "jobs" && <JobsView />}
       {activeView === "calendar" && <CalendarView {...shared} />}
       {activeView === "policies" && <PoliciesView {...shared} hiddenPolicyIds={hiddenPolicyIds} hidePolicy={hidePolicy} restorePolicy={restorePolicy} />}

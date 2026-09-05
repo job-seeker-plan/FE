@@ -50,6 +50,39 @@ export function extractPolicyDeadline(period: string) {
   return dates[dates.length - 1] ?? null;
 }
 
+function isoDate(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+export function currentWeekStart() {
+  const today = new Date();
+  today.setDate(today.getDate() - today.getDay());
+  return isoDate(today);
+}
+
+export function shiftWeekStart(weekStartValue: string, weeks: number) {
+  const date = new Date(weekStartValue);
+  date.setDate(date.getDate() + weeks * 7);
+  return isoDate(date);
+}
+
+export function buildWeekDays(weekStartValue: string, events: JobEvent[], transactions: FinanceTransaction[]) {
+  const start = new Date(weekStartValue);
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    const iso = isoDate(date);
+    const dayTransactions = transactions.filter((transaction) => transaction.occurred_on === iso);
+    return {
+      key: iso,
+      day: date.getDate(),
+      events: events.filter((event) => event.event_date === iso),
+      income: dayTransactions.filter((transaction) => transaction.type === "income").reduce((sum, transaction) => sum + transaction.amount, 0),
+      expense: dayTransactions.filter((transaction) => transaction.type === "expense").reduce((sum, transaction) => sum + transaction.amount, 0)
+    };
+  });
+}
+
 export function buildFinanceCalendarDays(monthValue: string, transactions: FinanceTransaction[]) {
   const [year, month] = monthValue.split("-").map(Number);
   const first = new Date(year, month - 1, 1);
