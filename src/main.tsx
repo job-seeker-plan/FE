@@ -27,7 +27,6 @@ import { useEmailImport } from "./hooks/useEmailImport";
 import { AppFrame } from "./components/AppFrame";
 import { LoginScreen } from "./screens/LoginScreen";
 import { Onboarding } from "./screens/Onboarding";
-import { DashboardView } from "./screens/DashboardView";
 import { JobsView } from "./screens/JobsView";
 import { CalendarView } from "./screens/CalendarView";
 import { PoliciesView } from "./screens/PoliciesView";
@@ -57,7 +56,7 @@ function App() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [authProviders, setAuthProviders] = useState<AuthProvider[]>([]);
   const [authReady, setAuthReady] = useState(false);
-  const [activeView, setActiveView] = useState<ViewKey>("dashboard");
+  const [activeView, setActiveView] = useState<ViewKey>("jobs");
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [plan, setPlan] = useState<PlanAnalysis | null>(null);
   const [events, setEvents] = useState<JobEvent[]>([]);
@@ -476,7 +475,6 @@ function App() {
 
   return (
     <AppFrame activeView={activeView} setActiveView={setActiveView} title={viewTitle(activeView)} status={plan?.status ?? null}>
-      {activeView === "dashboard" && <DashboardView profile={profile} plan={plan} events={events} />}
       {activeView === "jobs" && <JobsView />}
       {activeView === "calendar" && <CalendarView {...shared} />}
       {activeView === "policies" && <PoliciesView {...shared} hiddenPolicyIds={hiddenPolicyIds} hidePolicy={hidePolicy} restorePolicy={restorePolicy} />}

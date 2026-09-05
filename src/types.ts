@@ -1,4 +1,4 @@
-export type ViewKey = "dashboard" | "jobs" | "calendar" | "policies" | "settings";
+export type ViewKey = "jobs" | "calendar" | "policies" | "settings";
 export type Status = "stable" | "caution" | "risk";
 
 export type AuthUser = {
