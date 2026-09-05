@@ -1072,6 +1072,13 @@ button.preset.active {
   text-align: center;
 }
 
+.calendar-toolbar .icon-button-text {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  justify-self: center;
+  margin-top: 2px;
+}
+
 .calendar-toolbar input {
   max-width: 180px;
 }
@@ -1482,6 +1489,15 @@ button.danger {
     font-size: 15px;
   }
 
+  .job-result-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .job-result-card a {
+    justify-self: start;
+  }
+
   .flow-row,
   .item,
   .compare {
@@ -1511,8 +1527,8 @@ button.danger {
   }
 
   .calendar-toolbar {
-    align-items: stretch;
-    flex-direction: column;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
   }
 
   .calendar-toolbar input {

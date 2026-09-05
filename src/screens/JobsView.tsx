@@ -4,6 +4,7 @@ import type { CompanySuggestion, HiringSeason, JobFilter, LinkareerRecruitmentRe
 import { employmentTypes, jobCategoryTree, regions } from "../constants";
 import { Panel } from "../components/Panel";
 import { request } from "../api";
+import { pageNumbers } from "../utils";
 
 const emptyFilter: JobFilter = {
   keyword: "", jobMajorCategory: "", regions: [], employmentType: "any", experience: "any", deadlineWithinDays: "any"
@@ -23,11 +24,6 @@ const linkareerRegion: Record<string, string> = {
   "서울": "2", "부산": "3", "대구": "4", "인천": "5", "광주": "6", "대전": "7", "울산": "8", "경기": "9", "강원": "10",
   "충북": "11", "충남": "11", "전북": "25", "전남": "25", "경북": "26", "경남": "26", "제주": "27", "세종": "28", "해외": "29"
 };
-
-function pageNumbers(currentPage: number, totalPages: number) {
-  const start = Math.max(1, Math.min(currentPage - 2, Math.max(1, totalPages - 4)));
-  return Array.from({ length: Math.min(5, totalPages - start + 1) }, (_, index) => start + index);
-}
 
 export function JobsView() {
   const [filter, setFilter] = useState<JobFilter>(emptyFilter);

@@ -3,7 +3,7 @@ import type { MatchedPolicy } from "../types";
 import { Panel } from "../components/Panel";
 import { PolicyPanel } from "../components/PolicyPanel";
 import type { JobEvent } from "../types";
-import { extractPolicyDeadline } from "../utils";
+import { extractPolicyDeadline, pageNumbers } from "../utils";
 
 const REGION_OPTIONS = [
   ["11", "서울"], ["26", "부산"], ["27", "대구"], ["28", "인천"], ["29", "광주"], ["30", "대전"],
@@ -54,7 +54,7 @@ export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedP
         <PolicyPanel policies={visiblePolicies} selectedPolicyIds={selectedPolicyIds} setSelectedPolicyIds={setSelectedPolicyIds} onHidePolicy={hidePolicy} />
         <div className="policy-pagination policy-pagination-bottom" aria-label="정책 페이지 이동">
           <button className="secondary" disabled={page === 1} onClick={() => setPage((current) => current - 1)}>이전</button>
-          {Array.from({ length: pageCount }, (_, index) => index + 1).map((number) => <button key={number} className={number === page ? "" : "secondary"} onClick={() => setPage(number)}>{number}</button>)}
+          {pageNumbers(page, pageCount).map((number) => <button key={number} className={number === page ? "" : "secondary"} onClick={() => setPage(number)}>{number}</button>)}
           <button className="secondary" disabled={page === pageCount} onClick={() => setPage((current) => current + 1)}>다음</button>
         </div>
       </div>
