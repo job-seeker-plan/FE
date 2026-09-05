@@ -1628,25 +1628,30 @@ button.danger {
     max-width: none;
   }
 
-  .weekday-row {
-    display: none;
-  }
-
-  .calendar-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    border: 0;
-    gap: 8px;
+  .weekday-row span {
+    padding: 6px 2px;
+    font-size: 11px;
   }
 
   .calendar-cell {
-    min-height: 74px;
-    border: 1px solid #e4eaf2;
-    border-radius: 8px;
+    min-height: 64px;
+    padding: 6px 4px;
   }
 
-  .muted-cell {
-    display: none;
+  .day-number {
+    min-width: 20px;
+    height: 20px;
+    font-size: 11px;
+  }
+
+  .calendar-events {
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .event-chip {
+    padding: 4px 5px;
+    font-size: 10px;
   }
 }
 
