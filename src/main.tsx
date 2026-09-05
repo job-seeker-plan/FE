@@ -78,6 +78,7 @@ function App() {
   const [financialContextForm, setFinancialContextForm] = useState<FinancialContextForm>({ goal: "", burden: "", pledge: "", first_question: "" });
   const [selectedPolicyIds, setSelectedPolicyIds] = useState<string[]>([]);
   const [confirmedPolicyIds, setConfirmedPolicyIds] = useState<string[]>([]);
+  const [hiddenPolicyIds, setHiddenPolicyIds] = useState<string[]>([]);
   const [profileNotice, setProfileNotice] = useState<string | null>(null);
   const [settingsNotice, setSettingsNotice] = useState<string | null>(null);
   const [contextNotice, setContextNotice] = useState<string | null>(null);
@@ -121,6 +122,32 @@ function App() {
   useEffect(() => {
     if (authUser) void loadDashboard();
   }, [authUser]);
+
+  useEffect(() => {
+    if (!authUser) {
+      setHiddenPolicyIds([]);
+      return;
+    }
+    try {
+      const saved = JSON.parse(localStorage.getItem(`hiddenPolicies:${authUser.user_id}`) ?? "[]");
+      setHiddenPolicyIds(Array.isArray(saved) ? saved.filter((id): id is string => typeof id === "string") : []);
+    } catch {
+      setHiddenPolicyIds([]);
+    }
+  }, [authUser]);
+
+  function hidePolicy(policyId: string) {
+    const nextIds = [...new Set([...hiddenPolicyIds, policyId])];
+    setHiddenPolicyIds(nextIds);
+    setSelectedPolicyIds((current) => current.filter((id) => id !== policyId));
+    if (authUser) localStorage.setItem(`hiddenPolicies:${authUser.user_id}`, JSON.stringify(nextIds));
+  }
+
+  function restorePolicy(policyId: string) {
+    const nextIds = hiddenPolicyIds.filter((id) => id !== policyId);
+    setHiddenPolicyIds(nextIds);
+    if (authUser) localStorage.setItem(`hiddenPolicies:${authUser.user_id}`, JSON.stringify(nextIds));
+  }
 
   async function loadAuth() {
     const [providers, user] = await Promise.all([
@@ -234,7 +261,7 @@ function App() {
       const createdEvents = await Promise.all(newPolicies.map((policy) => request<JobEvent>("/events", {
         method: "POST",
         body: JSON.stringify({
-          title: policy.name + " 마감",
+          title: policy.name,
           event_type: "document_deadline",
           event_date: extractPolicyDeadline(policy.application_period),
           expected_cost: 0,
@@ -442,7 +469,7 @@ function App() {
     <AppFrame activeView={activeView} setActiveView={setActiveView} title={viewTitle(activeView)} status={plan?.status ?? null}>
       {activeView === "jobs" && <JobsView />}
       {activeView === "calendar" && <CalendarView {...shared} />}
-      {activeView === "policies" && <PoliciesView {...shared} />}
+      {activeView === "policies" && <PoliciesView {...shared} hiddenPolicyIds={hiddenPolicyIds} hidePolicy={hidePolicy} restorePolicy={restorePolicy} />}
       {activeView === "settings" && <SettingsView profile={profile} onLogout={logout} updateProfile={updateProfile} updateNotice={settingsNotice} contextForm={financialContextForm} setContextForm={setFinancialContextForm} updateFinancialContexts={updateFinancialContexts} contextNotice={contextNotice} />}
     </AppFrame>
   );

@@ -12,13 +12,8 @@
 
 @media (max-width: 700px) {
   .job-primary-filters,
-  .job-filter-row,
-  .job-detail-filters {
+  .job-filter-row {
     grid-template-columns: 1fr;
-  }
-
-  .detail-wide {
-    grid-column: auto;
   }
 
   .jobs-filter-header {
@@ -547,14 +542,13 @@ button.preset.active {
 }
 
 .job-primary-filters,
-.job-filter-row,
-.job-detail-filters {
+.job-filter-row {
   display: grid;
   gap: 12px;
 }
 
 .job-primary-filters {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-bottom: 12px;
 }
 
@@ -564,16 +558,14 @@ button.preset.active {
 
 .job-primary-field,
 .job-filter-row label,
-.job-salary-field,
-.job-detail-filters label {
+.job-salary-field {
   display: grid;
   gap: 7px;
 }
 
 .job-primary-field > span,
 .job-filter-row label > span,
-.job-salary-field > span,
-.job-detail-filters label > span {
+.job-salary-field > span {
   color: #475569;
   font-size: 12px;
   font-weight: 800;
@@ -625,78 +617,6 @@ button.preset.active {
 
 .inline-check input {
   width: auto;
-}
-
-.quick-filter-section {
-  margin-top: 22px;
-  padding-top: 18px;
-  border-top: 1px solid #edf1f6;
-}
-
-.section-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-  color: #334155;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.section-label small {
-  color: #2563eb;
-  font-weight: 700;
-}
-
-.quick-filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.quick-filter {
-  padding: 8px 12px;
-  color: #475569;
-  border: 1px solid #dce4ef;
-  border-radius: 999px;
-  background: #fff;
-  font-size: 12px;
-}
-
-.quick-filter.active {
-  color: #1d4ed8;
-  border-color: #8bb5f2;
-  background: #eaf1ff;
-}
-
-.detail-toggle {
-  width: 100%;
-  justify-content: flex-start;
-  margin-top: 18px;
-  color: #334155;
-  border-top: 1px solid #edf1f6;
-  border-radius: 0;
-  background: transparent;
-}
-
-.detail-toggle svg:last-child {
-  margin-left: auto;
-  transition: transform 160ms ease;
-}
-
-.detail-toggle.open svg:last-child {
-  transform: rotate(180deg);
-}
-
-.job-detail-filters {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  padding: 16px;
-  border-radius: 8px;
-  background: #f8fafc;
-}
-
-.detail-wide {
-  grid-column: span 2;
 }
 
 .job-search-button {
@@ -974,7 +894,7 @@ button.preset.active {
 
 .policy {
   display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
+  grid-template-columns: 18px minmax(0, 1fr) auto;
   gap: 12px;
   cursor: pointer;
 }
@@ -988,6 +908,66 @@ button.preset.active {
   font-size: 13px;
   line-height: 1.55;
   margin-bottom: 0;
+}
+
+.policy-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.policy-pagination button {
+  min-width: 38px;
+  padding: 8px 10px;
+}
+
+.policy-hide-button {
+  align-self: start;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.hidden-policy-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e4eaf2;
+}
+
+.hidden-policy-section {
+  margin-top: 16px;
+}
+
+.hidden-policy-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.policy-filter-grid {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.8fr) minmax(180px, 1.4fr) minmax(130px, 0.8fr);
+  gap: 10px;
+}
+
+.policy-filter-grid label {
+  display: grid;
+  gap: 6px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.policy-result-summary {
+  margin: 12px 0 8px;
+}
+
+@media (max-width: 700px) {
+  .policy-filter-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .scenario-note {

@@ -1,21 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ExternalLink, RotateCcw, Search, SlidersHorizontal, TrendingUp } from "lucide-react";
+import { ChevronDown, ExternalLink, RotateCcw, Search, TrendingUp } from "lucide-react";
 import type { CompanySuggestion, HiringSeason, JobFilter, LinkareerRecruitmentResult } from "../types";
-import { educationLevels, employmentTypes, jobCategoryTree, regions, workTypes } from "../constants";
+import { employmentTypes, jobCategoryTree, regions } from "../constants";
 import { Panel } from "../components/Panel";
 import { request } from "../api";
 
 const emptyFilter: JobFilter = {
-  keyword: "", jobMajorCategory: "", jobMinorCategory: "", regions: [], workType: "any",
-  education: "any", employmentType: "any",
-  quick: { entryLevel: false, remote: false, recent: false, closingSoon: false },
-  companySize: "", industry: "", techStack: ""
+  keyword: "", jobMajorCategory: "", regions: [], employmentType: "any", experience: "any", deadlineWithinDays: "any"
 };
-
-const quickFilters: Array<[keyof JobFilter["quick"], string]> = [
-  ["entryLevel", "신입 가능"], ["remote", "재택 가능"],
-  ["recent", "최근 등록"], ["closingSoon", "마감 임박"]
-];
 
 const linkareerJobCategory: Record<string, string> = {
   "기획·전략": "100001",
@@ -39,12 +31,10 @@ function pageNumbers(currentPage: number, totalPages: number) {
 
 export function JobsView() {
   const [filter, setFilter] = useState<JobFilter>(emptyFilter);
-  const [showDetails, setShowDetails] = useState(false);
   const [searched, setSearched] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [result, setResult] = useState<LinkareerRecruitmentResult | null>(null);
-  const jobMinorOptions = filter.jobMajorCategory ? jobCategoryTree[filter.jobMajorCategory] ?? [] : [];
 
   // 채용 시즌 정보 - 실시간 공고 검색(위 필터)이랑은 별개로, 회사 하나를 골라서
   // "이 회사는 보통 언제 채용이 몰리는지" 과거 이력을 보여주는 부분.
@@ -107,17 +97,26 @@ export function JobsView() {
   function updateFilter<K extends keyof JobFilter>(key: K, value: JobFilter[K]) {
     setFilter((current) => ({ ...current, [key]: value }));
   }
-  function toggleQuick(key: keyof JobFilter["quick"]) {
-    setFilter((current) => ({ ...current, quick: { ...current.quick, [key]: !current.quick[key] } }));
-  }
   function reset() {
     setFilter(emptyFilter);
     setSearched(false);
     setSearchError(null);
     setResult(null);
   }
-  const activeQuickCount = Object.values(filter.quick).filter(Boolean).length;
 
+  const visibleJobs = result?.jobs.filter((job) => {
+    const searchable = [job.title, job.company, ...job.categories, ...job.locations, job.employment_type].join(" ").toLowerCase();
+    const experienceMatches = filter.experience === "any"
+      || (filter.experience === "entry" && searchable.includes("신입"))
+      || (filter.experience === "experienced" && searchable.includes("경력"))
+      || (filter.experience === "intern" && searchable.includes("인턴"))
+      || (filter.experience === "contract" && searchable.includes("계약"));
+    const deadline = /^\d{4}-\d{2}-\d{2}$/.test(job.deadline) ? new Date(`${job.deadline}T23:59:59`) : null;
+    const daysUntilDeadline = deadline ? Math.ceil((deadline.getTime() - Date.now()) / 86_400_000) : null;
+    const deadlineMatches = filter.deadlineWithinDays === "any"
+      || (daysUntilDeadline !== null && daysUntilDeadline >= 0 && daysUntilDeadline <= Number(filter.deadlineWithinDays));
+    return experienceMatches && deadlineMatches;
+  }) ?? [];
   async function searchJobs(page = 1) {
     try {
       setSearching(true);
@@ -126,7 +125,7 @@ export function JobsView() {
       setResult(await request<LinkareerRecruitmentResult>("/jobs/search", {
         method: "POST",
         body: JSON.stringify({
-          keyword: filter.keyword || filter.jobMinorCategory,
+          keyword: filter.keyword,
           category_id: linkareerJobCategory[filter.jobMajorCategory] || null,
           region_id: linkareerRegion[filter.regions[0] ?? ""] || null,
           job_type: filter.employmentType === "any" ? null : filter.employmentType,
@@ -156,31 +155,20 @@ export function JobsView() {
         <div className="job-primary-filters">
           <label className="job-primary-field"><span>검색어</span><input placeholder="예: 백엔드, 마케팅, 인턴" value={filter.keyword} onChange={(event) => updateFilter("keyword", event.target.value)} /></label>
           <label className="job-primary-field"><span>지역</span><select value={filter.regions[0] ?? ""} onChange={(event) => updateFilter("regions", event.target.value ? [event.target.value] : [])}><option value="">전체 지역</option>{regions.map((region) => <option key={region}>{region}</option>)}</select></label>
-          <label className="job-primary-field"><span>직무</span><select value={filter.jobMajorCategory} onChange={(event) => setFilter({ ...filter, jobMajorCategory: event.target.value, jobMinorCategory: "" })}><option value="">전체 직무</option>{Object.keys(jobCategoryTree).map((category) => <option key={category}>{category}</option>)}</select></label>
+          <label className="job-primary-field"><span>직무</span><select value={filter.jobMajorCategory} onChange={(event) => updateFilter("jobMajorCategory", event.target.value)}><option value="">전체 직무</option>{Object.keys(jobCategoryTree).map((category) => <option key={category}>{category}</option>)}</select></label>
         </div>
         <div className="job-filter-row">
-          <label><span>근무 형태</span><select value={filter.workType} onChange={(event) => updateFilter("workType", event.target.value)}>{workTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}</select></label>
           <label><span>고용 형태</span><select value={filter.employmentType} onChange={(event) => updateFilter("employmentType", event.target.value)}>{employmentTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}</select></label>
+          <label><span>경력 조건</span><select value={filter.experience} onChange={(event) => updateFilter("experience", event.target.value as JobFilter["experience"])}><option value="any">전체 경력</option><option value="entry">신입 가능</option><option value="experienced">경력직</option><option value="intern">인턴</option><option value="contract">계약직</option></select></label>
+          <label><span>마감 조건</span><select value={filter.deadlineWithinDays} onChange={(event) => updateFilter("deadlineWithinDays", event.target.value as JobFilter["deadlineWithinDays"])}><option value="any">전체 마감</option><option value="7">7일 이내 마감</option><option value="30">30일 이내 마감</option></select></label>
         </div>
-        <div className="quick-filter-section">
-          <div className="section-label"><span>빠른 조건</span>{activeQuickCount > 0 && <small>{activeQuickCount}개 선택</small>}</div>
-          <div className="quick-filter-row">{quickFilters.map(([key, label]) => <button type="button" key={key} className={"quick-filter " + (filter.quick[key] ? "active" : "")} onClick={() => toggleQuick(key)}>{label}</button>)}</div>
-        </div>
-        <button className={"detail-toggle " + (showDetails ? "open" : "")} type="button" onClick={() => setShowDetails((current) => !current)}><SlidersHorizontal size={16} />상세조건<ChevronDown size={16} /></button>
-        {showDetails && <div className="job-detail-filters">
-          <label><span>세부 직무</span><select value={filter.jobMinorCategory} disabled={jobMinorOptions.length === 0} onChange={(event) => updateFilter("jobMinorCategory", event.target.value)}><option value="">{jobMinorOptions.length === 0 ? "직무 대분류를 먼저 선택" : "전체 세부 직무"}</option>{jobMinorOptions.map((minor) => <option key={minor}>{minor}</option>)}</select></label>
-          <label><span>학력</span><select value={filter.education} onChange={(event) => updateFilter("education", event.target.value)}>{educationLevels.map((level) => <option key={level.value} value={level.value}>{level.label}</option>)}</select></label>
-          <label><span>회사 규모</span><select value={filter.companySize} onChange={(event) => updateFilter("companySize", event.target.value)}><option value="">전체</option><option>스타트업</option><option>중소기업</option><option>중견기업</option><option>대기업</option></select></label>
-          <label><span>산업 분야</span><select value={filter.industry} onChange={(event) => updateFilter("industry", event.target.value)}><option value="">전체</option><option>IT·플랫폼</option><option>금융</option><option>제조</option><option>커머스</option><option>교육</option></select></label>
-          <label className="detail-wide"><span>기술 스택</span><input placeholder="예: Java, React, Python" value={filter.techStack} onChange={(event) => updateFilter("techStack", event.target.value)} /></label>
-        </div>}
         <button className="job-search-button" type="button" disabled={searching} onClick={() => void searchJobs()}><Search size={17} />{searching ? "채용공고를 불러오는 중" : "조건에 맞는 공고 검색"}</button>
       </Panel>
       <Panel title="검색 결과">
         {searchError && <p className="jobs-search-error">{searchError}</p>}
-        {!searchError && result && result.jobs.length > 0 && <div className="job-result-list">
-          <p className="jobs-result-note">공개 채용공고 {result.total_count.toLocaleString()}건 중 {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()}번째{result.cached ? " · 최근 검색 결과" : ""}</p>
-          {result.jobs.map((job) => <article className="job-result-card" key={job.id}>
+        {!searchError && result && visibleJobs.length > 0 && <div className="job-result-list">
+          <p className="jobs-result-note">공개 채용공고 {result.total_count.toLocaleString()}건 중 {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()}번째 · 현재 페이지 필터 결과 {visibleJobs.length}건{result.cached ? " · 최근 검색 결과" : ""}</p>
+          {visibleJobs.map((job) => <article className="job-result-card" key={job.id}>
             <div><strong>{job.title}</strong><span>{job.company}</span></div>
             <div className="job-result-meta"><span>{job.locations.join(" · ") || "근무지 원문 확인"}</span><span>{job.categories.join(" · ") || job.employment_type}</span><span>{job.employment_type} · {job.deadline}</span></div>
             <a href={job.url} target="_blank" rel="noreferrer">공고 보기 <ExternalLink size={14} /></a>
@@ -191,7 +179,8 @@ export function JobsView() {
             <button type="button" className="secondary" disabled={searching || result.page === totalPages} onClick={() => void searchJobs(result.page + 1)}>다음</button>
           </nav>}
         </div>}
-        {!searchError && (!result || result.jobs.length === 0) && <div className="jobs-empty-state"><Search size={30} /><strong>{searched ? "표시할 공고가 없어요" : "조건을 설정해보세요"}</strong><span>{searched ? "검색어·직무·지역을 바꿔 다시 시도해 주세요." : "검색어·직무·지역을 설정하면 공개 채용공고를 불러옵니다."}</span></div>}
+        {!searchError && result && visibleJobs.length === 0 && <div className="jobs-empty-state"><Search size={30} /><strong>현재 페이지에 맞는 공고가 없어요</strong><span>경력·마감 조건을 바꾸거나 다음 페이지를 확인해 주세요.</span></div>}
+        {!searchError && !result && <div className="jobs-empty-state"><Search size={30} /><strong>{searched ? "표시할 공고가 없어요" : "조건을 설정해보세요"}</strong><span>{searched ? "검색어·직무·지역을 바꿔 다시 시도해 주세요." : "검색어·직무·지역을 설정하면 공개 채용공고를 불러옵니다."}</span></div>}
       </Panel>
       <Panel title="채용 시즌 정보 (프로토타입)">
         <div className="job-primary-filters">

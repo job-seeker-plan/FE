@@ -66,7 +66,8 @@ export type FinanceTransaction = {
 export type MatchedPolicy = {
   id: string;
   name: string;
-  match_score: number;
+  region?: string;
+  region_codes?: string[];
   benefit_amount: number | null;
   description: string;
   application_period: string;
@@ -145,15 +146,10 @@ export type RecordForm = {
 export type JobFilter = {
   keyword: string;
   jobMajorCategory: string;
-  jobMinorCategory: string;
   regions: string[];
-  workType: string;
-  education: string;
   employmentType: string;
-  quick: { entryLevel: boolean; remote: boolean; recent: boolean; closingSoon: boolean };
-  companySize: string;
-  industry: string;
-  techStack: string;
+  experience: "any" | "entry" | "experienced" | "intern" | "contract";
+  deadlineWithinDays: "any" | "7" | "30";
 };
 
 export type LinkareerRecruitment = {
