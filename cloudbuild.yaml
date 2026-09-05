@@ -1,0 +1,13 @@
+substitutions:
+  _API_BASE: "https://api.j2w.zruor.cloud"
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - --build-arg
+      - VITE_API_BASE=${_API_BASE}
+      - -t
+      - asia-northeast3-docker.pkg.dev/aivideo-weight/planner-images/fe:${_TAG}
+      - .
+images:
+  - asia-northeast3-docker.pkg.dev/aivideo-weight/planner-images/fe:${_TAG}
