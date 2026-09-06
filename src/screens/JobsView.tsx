@@ -179,7 +179,7 @@ export function JobsView() {
         {!searchError && result && visibleJobs.length === 0 && <div className="jobs-empty-state"><Search size={30} /><strong>현재 페이지에 맞는 공고가 없어요</strong><span>경력·마감 조건을 바꾸거나 다음 페이지를 확인해 주세요.</span></div>}
         {!searchError && !result && <div className="jobs-empty-state"><Search size={30} /><strong>{searched ? "표시할 공고가 없어요" : "조건을 설정해보세요"}</strong><span>{searched ? "검색어·직무·지역을 바꿔 다시 시도해 주세요." : "검색어·직무·지역을 설정하면 공개 채용공고를 불러옵니다."}</span></div>}
       </Panel>
-      <Panel title="채용 시즌 정보 (프로토타입)">
+      <Panel title="채용 시즌 정보">
         <div className="job-primary-filters">
           <label className="job-primary-field" style={{ position: "relative" }}>
             <span>회사명</span>

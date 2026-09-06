@@ -43,15 +43,6 @@ export type EmailPreviewEvent = {
   memo: string;
 };
 
-export type FinancialRecord = {
-  user_id: string;
-  month: string;
-  spend: number;
-  bill: number;
-  balance: number;
-  income: number;
-};
-
 export type FinanceTransactionType = "income" | "expense";
 
 export type FinanceTransaction = {
@@ -134,14 +125,6 @@ export type FinancialContext = {
   related_category: string;
   emotion_tag: string | null;
   urgency_level: string;
-};
-
-export type RecordForm = {
-  month: string;
-  spend: string;
-  bill: string;
-  balance: string;
-  income: string;
 };
 
 export type JobFilter = {
