@@ -70,6 +70,33 @@ export function OverviewView({
 
   return (
     <>
+      <Panel title="이번 주 일정 · 가계부">
+        <div className="calendar-toolbar">
+          <button className="icon-button calendar-nav-button" aria-label="이전 주" onClick={() => shiftWeek(-1)}><ChevronLeft size={20} /></button>
+          <strong className="calendar-month-title">{weekStart} ~ {weekEnd}</strong>
+          <button className="icon-button calendar-nav-button" aria-label="다음 주" onClick={() => shiftWeek(1)}><ChevronRight size={20} /></button>
+        </div>
+        <div className="weekday-row">
+          {["일", "월", "화", "수", "목", "금", "토"].map((day) => <span key={day}>{day}</span>)}
+        </div>
+        <div className="calendar-grid">
+          {weekDays.map((day) => (
+            <div className="calendar-cell" key={day.key} onClick={() => setSelectedDate(day.key)}>
+              <span className="day-number">{day.day}</span>
+              <div className="calendar-events">
+                {day.events.slice(0, 3).map((event) => (
+                  <span className="event-chip" key={event.id}>{event.title}</span>
+                ))}
+              </div>
+              <div className="calendar-events finance-day-amounts">
+                {day.income > 0 && <span className="income-amount">+{formatWon(day.income)}</span>}
+                {day.expense > 0 && <span className="expense-amount">-{formatWon(day.expense)}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Panel>
+
       {plan ? (
         <>
           <section className="summary-strip">
@@ -115,33 +142,6 @@ export function OverviewView({
           </div>
         </Panel>
       )}
-      <Panel title="이번 주 일정 · 가계부">
-        <div className="calendar-toolbar">
-          <button className="icon-button calendar-nav-button" aria-label="이전 주" onClick={() => shiftWeek(-1)}><ChevronLeft size={20} /></button>
-          <strong className="calendar-month-title">{weekStart} ~ {weekEnd}</strong>
-          <button className="icon-button calendar-nav-button" aria-label="다음 주" onClick={() => shiftWeek(1)}><ChevronRight size={20} /></button>
-        </div>
-        <div className="weekday-row">
-          {["일", "월", "화", "수", "목", "금", "토"].map((day) => <span key={day}>{day}</span>)}
-        </div>
-        <div className="calendar-grid">
-          {weekDays.map((day) => (
-            <div className="calendar-cell" key={day.key} onClick={() => setSelectedDate(day.key)}>
-              <span className="day-number">{day.day}</span>
-              <div className="calendar-events">
-                {day.events.slice(0, 3).map((event) => (
-                  <span className="event-chip" key={event.id}>{event.title}</span>
-                ))}
-              </div>
-              <div className="calendar-events finance-day-amounts">
-                {day.income > 0 && <span className="income-amount">+{formatWon(day.income)}</span>}
-                {day.expense > 0 && <span className="expense-amount">-{formatWon(day.expense)}</span>}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Panel>
-
       {selectedDate && (
         <DayDetailModal
           date={selectedDate}
