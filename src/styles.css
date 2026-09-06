@@ -844,7 +844,7 @@ button.preset.active {
 
 .job-result-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.8fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.8fr);
   align-items: center;
   gap: 18px;
   padding: 16px;
@@ -863,19 +863,9 @@ button.preset.active {
   color: #1e293b;
 }
 
-.job-result-card span,
-.job-result-card a {
+.job-result-card span {
   color: #64748b;
   font-size: 12px;
-}
-
-.job-result-card a {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: #2563eb;
-  white-space: nowrap;
-  font-weight: 800;
 }
 
 .job-pagination {
@@ -1695,10 +1685,6 @@ button.danger {
   .job-result-card {
     grid-template-columns: 1fr;
     gap: 10px;
-  }
-
-  .job-result-card a {
-    justify-self: start;
   }
 
   .flow-row,
