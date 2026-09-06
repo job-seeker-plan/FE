@@ -138,7 +138,7 @@ export function OverviewView({
       ) : (
         <Panel title="소비 예측 · AI 가이드">
           <div className="requirement">
-            <span>가계부에 수입·지출 내역을 2~3개월 이상 기록하면 다음 달 소비 예측과 AI 가이드가 여기에 표시됩니다. AI 서비스도 함께 실행되어야 합니다.</span>
+            <span>가계부에 수입·지출 내역을 2~3개월 이상 기록하면 다음 달 소비 예측과 AI 가이드가 여기에 표시됩니다.</span>
           </div>
         </Panel>
       )}

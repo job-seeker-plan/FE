@@ -3,7 +3,7 @@ import type { MatchedPolicy } from "../types";
 import { formatWon } from "../utils";
 import { Panel } from "./Panel";
 
-export function PolicyPanel({ policies, selectedPolicyIds, setSelectedPolicyIds, onHidePolicy }: { policies: MatchedPolicy[]; selectedPolicyIds: string[]; setSelectedPolicyIds: React.Dispatch<React.SetStateAction<string[]>>; onHidePolicy: (id: string) => void }) {
+export function PolicyPanel({ policies, selectedPolicyIds, setSelectedPolicyIds, onHidePolicy, onSimulate }: { policies: MatchedPolicy[]; selectedPolicyIds: string[]; setSelectedPolicyIds: React.Dispatch<React.SetStateAction<string[]>>; onHidePolicy: (id: string) => void; onSimulate?: (policy: MatchedPolicy) => void }) {
   return (
     <Panel title="추천 정책">
       <div className="item-list">
@@ -20,7 +20,12 @@ export function PolicyPanel({ policies, selectedPolicyIds, setSelectedPolicyIds,
               <span>{policy.benefit_amount == null ? "지원금 공고 확인" : formatWon(policy.benefit_amount)} · {policy.application_period}</span>
               <p>{policy.description}</p>
             </div>
-            <button type="button" className="secondary policy-hide-button" onClick={() => onHidePolicy(policy.id)}>숨기기</button>
+            <div className="policy-actions">
+              {onSimulate && policy.benefit_amount != null && (
+                <button type="button" className="secondary policy-hide-button" onClick={() => onSimulate(policy)}>적용 시뮬레이션</button>
+              )}
+              <button type="button" className="secondary policy-hide-button" onClick={() => onHidePolicy(policy.id)}>숨기기</button>
+            </div>
           </div>
         ))}
       </div>
