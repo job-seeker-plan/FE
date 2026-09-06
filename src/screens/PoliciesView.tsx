@@ -7,9 +7,9 @@ import type { JobEvent } from "../types";
 import { extractPolicyDeadline, pageNumbers } from "../utils";
 
 const REGION_OPTIONS = [
-  ["11", "서울"], ["26", "부산"], ["27", "대구"], ["28", "인천"], ["29", "광주"], ["30", "대전"],
-  ["31", "울산"], ["36", "세종"], ["41", "경기"], ["42", "강원"], ["43", "충북"], ["44", "충남"],
-  ["45", "전북"], ["46", "전남"], ["47", "경북"], ["48", "경남"], ["50", "제주"]
+  ["서울", "서울"], ["부산", "부산"], ["대구", "대구"], ["인천", "인천"], ["광주", "광주"], ["대전", "대전"],
+  ["울산", "울산"], ["세종", "세종"], ["경기", "경기"], ["강원", "강원"], ["충북", "충북"], ["충남", "충남"],
+  ["전북", "전북"], ["전남", "전남"], ["경북", "경북"], ["경남", "경남"], ["제주", "제주"]
 ] as const;
 
 export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedPolicyIds, confirmedPolicyIds, confirmSelectedPolicies, policyNotice, hiddenPolicyIds, hidePolicy, restorePolicy }: { policies: MatchedPolicy[]; events: JobEvent[]; selectedPolicyIds: string[]; setSelectedPolicyIds: React.Dispatch<React.SetStateAction<string[]>>; confirmedPolicyIds: string[]; confirmSelectedPolicies: () => Promise<void>; policyNotice?: string | null; hiddenPolicyIds: string[]; hidePolicy: (id: string) => void; restorePolicy: (id: string) => void }) {
@@ -25,11 +25,11 @@ export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedP
   const filteredPolicies = policies.filter((policy) => {
     if (calendarPolicyIds.has(policy.id) || hiddenPolicyIds.includes(policy.id)) return false;
     const policyText = [policy.name, policy.description].filter(Boolean).join(" ").toLowerCase();
-    const regionText = [policy.region, ...(policy.region_codes ?? [])].filter(Boolean).join(" ");
     const selectedRegion = REGION_OPTIONS.find(([, label]) => label === region);
     const deadline = extractPolicyDeadline(policy.application_period);
     const keywordMatches = !keyword.trim() || policyText.includes(keyword.trim().toLowerCase());
-    const regionMatches = region === "전체 지역" || (selectedRegion !== undefined && (regionText.includes(selectedRegion[0]) || regionText.includes(selectedRegion[1])));
+    const policyRegions = [policy.region, ...(policy.region_codes ?? [])].filter(Boolean);
+    const regionMatches = region === "전체 지역" || (selectedRegion !== undefined && (policyRegions.includes(selectedRegion[0]) || policyRegions.includes(selectedRegion[1])));
     return keywordMatches && regionMatches && (!deadline || deadline >= todayValue);
   });
   const pageCount = Math.max(1, Math.ceil(filteredPolicies.length / pageSize));
