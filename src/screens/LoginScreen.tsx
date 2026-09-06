@@ -6,7 +6,6 @@ export function LoginScreen({ providers }: { providers: AuthProvider[] }) {
     <main className="shell login-shell">
       <section className="login-card">
         <div>
-          <p className="eyebrow">AI Financial Planner</p>
           <h1>내 취업 준비 현금흐름을 개인 계정으로 관리하세요</h1>
           <p>로그인 후 금융 기록, 취업 캘린더, 정책 매칭 결과가 사용자별로 분리됩니다.</p>
         </div>

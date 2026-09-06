@@ -506,34 +506,14 @@ button.preset.active {
   background: #ffffff;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.sidebar-logo {
   padding: 6px 6px 22px;
 }
 
-.brand-mark {
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  color: #fff;
-  background: #1e3a8a;
-  font-weight: 900;
-}
-
-.brand strong,
-.brand span {
+.sidebar-logo img {
   display: block;
-}
-
-.brand span {
-  margin-top: 2px;
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 600;
+  width: 140px;
+  height: auto;
 }
 
 .sidebar nav {
@@ -1487,8 +1467,12 @@ button.danger {
     border-bottom: 1px solid #dfe5ee;
   }
 
-  .brand {
+  .sidebar-logo {
     padding: 0 4px 10px;
+  }
+
+  .sidebar-logo img {
+    width: 100px;
   }
 
   .sidebar nav {
