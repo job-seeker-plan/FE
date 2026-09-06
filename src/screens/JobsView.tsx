@@ -206,7 +206,7 @@ export function JobsView() {
               </div>
             )}
           </label>
-          <label className="job-primary-field"><span>직무</span><input placeholder="예: 데이터 (목데이터: 삼성전자+데이터, 삼성SDS+IT컨설팅, 카카오+서비스기획, 카카오뱅크+금융IT, CJ ENM+콘텐츠, CJ대한통운+물류, CJ제일제당+생산관리, CJ올리브영+MD)" value={seasonJobFamily} onChange={(event) => setSeasonJobFamily(event.target.value)} /></label>
+          <label className="job-primary-field"><span>직무</span><input placeholder="예: 데이터, IT컨설팅, 서비스기획, 금융IT, 콘텐츠, 물류, 생산관리, MD" value={seasonJobFamily} onChange={(event) => setSeasonJobFamily(event.target.value)} /></label>
         </div>
         <button className="job-search-button" type="button" onClick={lookupSeason} disabled={seasonLoading || !seasonCompany || !seasonJobFamily}>
           <TrendingUp size={17} />{seasonLoading ? "조회 중..." : "채용 시즌 조회"}
@@ -265,7 +265,7 @@ export function JobsView() {
                   style={{ display: "inline-flex", alignItems: "center", gap: "4px", background: "none", border: "none", padding: 0, marginTop: "10px", color: "#2563eb", fontSize: "0.85em", fontWeight: 600, cursor: "pointer" }}
                 >
                   <ChevronDown size={14} style={{ transform: jdDetailOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
-                  {jdDetailOpen ? "관련 공고 내용 접기" : `관련 공고 내용 ${seasonResult.jd_evidence.length}건 보기 (RAG 근거)`}
+                  {jdDetailOpen ? "관련 공고 내용 접기" : `관련 공고 내용 ${seasonResult.jd_evidence.length}건 보기`}
                 </button>
                 {jdDetailOpen && (
                   <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>

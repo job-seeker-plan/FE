@@ -18,7 +18,7 @@ export function Onboarding({ authUser, profileForm, setProfileForm, contextForm,
           <div className="step-item active"><span>1</span><strong>자금</strong><small>가용자금과 월 수입</small></div>
           <div className="step-item active"><span>2</span><strong>목표</strong><small>취업 목표와 지출 부담</small></div>
           <div className="step-item active"><span>3</span><strong>다짐</strong><small>선택 입력 · 건너뛸 수 있어요</small></div>
-          <div className="step-item active"><span>4</span><strong>AI 시작</strong><small>받고 싶은 도움 선택</small></div>
+          <div className="step-item active"><span>4</span><strong>AI 도움</strong><small>받고 싶은 도움 선택</small></div>
         </aside>
 
         <section className="panel setup-panel">
@@ -32,7 +32,7 @@ export function Onboarding({ authUser, profileForm, setProfileForm, contextForm,
 
           <div className="field-group">
             <label>
-              <span>사용자 ID</span>
+              <span>로그인 계정</span>
           <input readOnly value={authUser.email || authUser.name || authUser.user_id} />
             </label>
           </div>
