@@ -10,7 +10,6 @@ export function Onboarding({ authUser, profileForm, setProfileForm, contextForm,
   return (
     <main className="shell setup-shell">
       <header className="setup-header">
-        <p className="eyebrow">AI Financial Planner</p>
         <h1>취업 준비가 몇 달 버틸 수 있는지 먼저 계산합니다</h1>
         <p>최소 정보만 입력하고, 다음 화면에서 면접·시험·강의 일정을 캘린더에 추가합니다.</p>
       </header>

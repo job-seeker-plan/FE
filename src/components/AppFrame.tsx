@@ -1,6 +1,7 @@
 import React from "react";
 import type { Status, ViewKey } from "../types";
 import { navItems } from "../constants";
+import logo from "../assets/j2w-logo.png";
 
 const statusLabels: Record<Status, string> = {
   stable: "안정",
@@ -12,12 +13,8 @@ export function AppFrame({ activeView, setActiveView, title, status, children }:
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-mark">FP</div>
-          <div>
-            <strong>Job Planner</strong>
-            <span>Financial OS</span>
-          </div>
+        <div className="sidebar-logo">
+          <img src={logo} alt="J2W" />
         </div>
         <nav>
           {navItems.map((item) => (
@@ -32,7 +29,6 @@ export function AppFrame({ activeView, setActiveView, title, status, children }:
       <section className="workspace">
         <header className="topbar">
           <div>
-            <p className="eyebrow">AI Financial Planner</p>
             <h1>{title}</h1>
           </div>
           {status && <div className={`status ${status}`}>잔고 상태: {statusLabels[status]}</div>}
