@@ -1,4 +1,5 @@
 import React from "react";
+import { Search } from "lucide-react";
 import type { MatchedPolicy } from "../types";
 import { Panel } from "../components/Panel";
 import { PolicyPanel } from "../components/PolicyPanel";
@@ -28,8 +29,14 @@ export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedP
     const selectedRegion = REGION_OPTIONS.find(([, label]) => label === region);
     const deadline = extractPolicyDeadline(policy.application_period);
     const keywordMatches = !keyword.trim() || policyText.includes(keyword.trim().toLowerCase());
-    const policyRegions = [policy.region, ...(policy.region_codes ?? [])].filter(Boolean);
-    const regionMatches = region === "전체 지역" || (selectedRegion !== undefined && (policyRegions.includes(selectedRegion[0]) || policyRegions.includes(selectedRegion[1])));
+    // 온통청년 API의 zipCd는 시도(2자리)가 아니라 시군구 단위(5자리, 예: 41111=경기
+    // 수원시 장안구) 코드라서, 문자열을 통짜로 합쳐 includes()로 검사하면 예를 들어
+    // "41111"에 "11"이 우연히 포함되어 서울(11) 필터에 경기 정책이 잘못 섞여 나온다.
+    // 각 코드가 선택한 시도 코드로 "시작하는지"를 개별적으로 검사해야 정확하다.
+    const regionMatches = region === "전체 지역" || (selectedRegion !== undefined && (
+      (policy.region_codes ?? []).some((code) => code.startsWith(selectedRegion[0])) ||
+      (policy.region ?? "").includes(selectedRegion[1])
+    ));
     return keywordMatches && regionMatches && (!deadline || deadline >= todayValue);
   });
   const pageCount = Math.max(1, Math.ceil(filteredPolicies.length / pageSize));
@@ -45,6 +52,7 @@ export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedP
         <div className="policy-filter-grid">
           <label><span>지역</span><Select value={region} onChange={setRegion} options={[{ value: "전체 지역", label: "전체 지역" }, ...REGION_OPTIONS.map(([, label]) => ({ value: label, label }))]} /></label>
           <label><span>정책명·내용 검색</span><input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="예: 취업, 교육, 지원금" /></label>
+          <button type="button" className="policy-search-button" onClick={() => setPage(1)}><Search size={16} />검색</button>
         </div>
         <p className="muted policy-result-summary">총 {filteredPolicies.length}개 정책 · {page} / {pageCount}페이지</p>
         {hiddenPolicies.length > 0 && <div className="hidden-policy-section">

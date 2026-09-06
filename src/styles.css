@@ -1052,6 +1052,11 @@ button.preset.active {
   font-weight: 700;
 }
 
+.policy-search-button {
+  align-self: end;
+  width: 100%;
+}
+
 .policy-result-summary {
   margin: 12px 0 8px;
 }
