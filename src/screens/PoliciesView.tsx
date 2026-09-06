@@ -1,11 +1,11 @@
 import React from "react";
-import { Search } from "lucide-react";
-import type { MatchedPolicy } from "../types";
+import { Search, X } from "lucide-react";
+import { CartesianGrid, Legend, Line, LineChart as ReLineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import type { JobEvent, MatchedPolicy, PlanAnalysis } from "../types";
 import { Panel } from "../components/Panel";
 import { PolicyPanel } from "../components/PolicyPanel";
 import { Select } from "../components/Select";
-import type { JobEvent } from "../types";
-import { extractPolicyDeadline, pageNumbers } from "../utils";
+import { applyPolicyBenefit, extractPolicyDeadline, formatWon, pageNumbers } from "../utils";
 
 const REGION_OPTIONS = [
   ["11", "서울"], ["26", "부산"], ["27", "대구"], ["28", "인천"], ["29", "광주"], ["30", "대전"],
@@ -13,11 +13,12 @@ const REGION_OPTIONS = [
   ["45", "전북"], ["46", "전남"], ["47", "경북"], ["48", "경남"], ["50", "제주"]
 ] as const;
 
-export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedPolicyIds, confirmedPolicyIds, confirmSelectedPolicies, policyNotice, hiddenPolicyIds, hidePolicy, restorePolicy }: { policies: MatchedPolicy[]; events: JobEvent[]; selectedPolicyIds: string[]; setSelectedPolicyIds: React.Dispatch<React.SetStateAction<string[]>>; confirmedPolicyIds: string[]; confirmSelectedPolicies: () => Promise<void>; policyNotice?: string | null; hiddenPolicyIds: string[]; hidePolicy: (id: string) => void; restorePolicy: (id: string) => void }) {
+export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedPolicyIds, confirmedPolicyIds, confirmSelectedPolicies, policyNotice, hiddenPolicyIds, hidePolicy, restorePolicy, plan, calendarMonth }: { policies: MatchedPolicy[]; events: JobEvent[]; selectedPolicyIds: string[]; setSelectedPolicyIds: React.Dispatch<React.SetStateAction<string[]>>; confirmedPolicyIds: string[]; confirmSelectedPolicies: () => Promise<void>; policyNotice?: string | null; hiddenPolicyIds: string[]; hidePolicy: (id: string) => void; restorePolicy: (id: string) => void; plan: PlanAnalysis | null; calendarMonth: string }) {
   const [page, setPage] = React.useState(1);
   const [showHiddenPolicies, setShowHiddenPolicies] = React.useState(false);
   const [keyword, setKeyword] = React.useState("");
   const [region, setRegion] = React.useState("전체 지역");
+  const [simulatingPolicy, setSimulatingPolicy] = React.useState<MatchedPolicy | null>(null);
   const pageSize = 8;
   const today = new Date();
   const todayValue = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -45,6 +46,17 @@ export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedP
   React.useEffect(() => { if (page > pageCount) setPage(pageCount); }, [page, pageCount]);
   React.useEffect(() => { setPage(1); }, [keyword, region]);
 
+  const simulation = simulatingPolicy && plan && simulatingPolicy.benefit_amount != null ? (() => {
+    const flows = plan.monthly_cash_flows;
+    const fromMonth = flows.some((flow) => flow.month === calendarMonth) ? calendarMonth : (flows[0]?.month ?? calendarMonth);
+    const simulatedFlows = applyPolicyBenefit(flows, fromMonth, simulatingPolicy.benefit_amount);
+    return {
+      chartData: flows.map((flow, index) => ({ month: flow.month, before: flow.closing_cash, after: simulatedFlows[index].closing_cash })),
+      beforeTarget: flows.length > 0 ? flows[flows.length - 1].closing_cash : 0,
+      afterTarget: simulatedFlows.length > 0 ? simulatedFlows[simulatedFlows.length - 1].closing_cash : 0
+    };
+  })() : null;
+
   return (
     <section className="policy-page-layout">
       <div className="policy-list-column">
@@ -60,7 +72,7 @@ export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedP
           {showHiddenPolicies && <div className="hidden-policy-list">{hiddenPolicies.map((policy) => <div className="hidden-policy-row" key={policy.id}><span>{policy.name}</span><button className="secondary" onClick={() => restorePolicy(policy.id)}>다시 표시</button></div>)}</div>}
         </div>}
         </Panel>
-        <PolicyPanel policies={visiblePolicies} selectedPolicyIds={selectedPolicyIds} setSelectedPolicyIds={setSelectedPolicyIds} onHidePolicy={hidePolicy} />
+        <PolicyPanel policies={visiblePolicies} selectedPolicyIds={selectedPolicyIds} setSelectedPolicyIds={setSelectedPolicyIds} onHidePolicy={hidePolicy} onSimulate={setSimulatingPolicy} />
         <div className="policy-pagination policy-pagination-bottom" aria-label="정책 페이지 이동">
           <button className="secondary" disabled={page === 1} onClick={() => setPage((current) => current - 1)}>이전</button>
           {pageNumbers(page, pageCount).map((number) => <button key={number} className={number === page ? "" : "secondary"} onClick={() => setPage(number)}>{number}</button>)}
@@ -73,6 +85,42 @@ export function PoliciesView({ policies, events, selectedPolicyIds, setSelectedP
         {confirmedPolicyIds.length > 0 && <p className="success-text">확정된 정책 {confirmedPolicyIds.length}개</p>}
         {policyNotice && <p className="muted">{policyNotice}</p>}
       </Panel>
+      {simulatingPolicy && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSimulatingPolicy(null)}>
+          <section className="event-modal policy-simulation-modal" role="dialog" aria-modal="true" aria-labelledby="policy-simulation-title">
+            <div className="modal-header">
+              <div>
+                <span className="eyebrow">정책 적용 시뮬레이션</span>
+                <h2 id="policy-simulation-title">{simulatingPolicy.name}</h2>
+              </div>
+              <button className="icon-button" aria-label="닫기" onClick={() => setSimulatingPolicy(null)}><X size={18} /></button>
+            </div>
+            {simulation ? (
+              <>
+                <div className="chart">
+                  <ResponsiveContainer>
+                    <ReLineChart data={simulation.chartData} margin={{ top: 8, right: 18, bottom: 0, left: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#d7dee8" />
+                      <XAxis dataKey="month" />
+                      <YAxis tickFormatter={(value) => `${Math.round(Number(value) / 10000)}만`} width={54} />
+                      <Tooltip formatter={(value) => formatWon(Number(value))} />
+                      <Legend />
+                      <Line type="monotone" dataKey="before" name="적용 전" stroke="#94a3b8" strokeWidth={2} dot={{ r: 3 }} />
+                      <Line type="monotone" dataKey="after" name="적용 후" stroke="#16a34a" strokeWidth={3} dot={{ r: 3 }} />
+                    </ReLineChart>
+                  </ResponsiveContainer>
+                </div>
+                <p className="scenario-note">목표월 예상 잔액 {formatWon(simulation.beforeTarget)} → {formatWon(simulation.afterTarget)} ({formatWon(simulation.afterTarget - simulation.beforeTarget)} 증가)</p>
+              </>
+            ) : (
+              <p className="muted">대시보드에서 예상 잔액이 먼저 계산되어야 시뮬레이션할 수 있어요.</p>
+            )}
+            <div className="button-row modal-actions">
+              <button className="secondary" onClick={() => setSimulatingPolicy(null)}>닫기</button>
+            </div>
+          </section>
+        </div>
+      )}
     </section>
   );
 }

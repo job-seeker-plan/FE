@@ -1013,8 +1013,15 @@ button.preset.active {
   padding: 8px 10px;
 }
 
-.policy-hide-button {
+.policy-actions {
   align-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.policy-hide-button {
   white-space: nowrap;
   font-size: 12px;
 }
@@ -1287,6 +1294,10 @@ button.danger {
   border-radius: 16px;
   background: #fff;
   box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+}
+
+.policy-simulation-modal {
+  width: min(100%, 640px);
 }
 
 .modal-header {

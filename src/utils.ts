@@ -1,7 +1,23 @@
-import type { FinanceTransaction, JobEvent } from "./types";
+import type { FinanceTransaction, JobEvent, MonthlyCashFlow } from "./types";
 
 export function formatWon(value: number) {
   return `${Math.round(value / 10_000).toLocaleString("ko-KR")}만원`;
+}
+
+// 정책 지원금(benefit_amount)이 fromMonth에 한 번 들어온다고 가정하고 이후 잔액을 다시
+// 계산한다. BE의 buildPlan()과 동일하게 매달 잔액은 전달 잔액을 그대로 이어받으므로,
+// fromMonth부터는 매달 closing_cash가 지원금만큼 그대로 밀려 올라간다 - 새로 API를
+// 호출하지 않고 이미 받아온 monthly_cash_flows에 이 한 가지 조건만 더하면 된다.
+export function applyPolicyBenefit(flows: MonthlyCashFlow[], fromMonth: string, benefitAmount: number): MonthlyCashFlow[] {
+  return flows.map((flow) => {
+    if (flow.month < fromMonth) return flow;
+    return {
+      ...flow,
+      opening_cash: flow.month === fromMonth ? flow.opening_cash : flow.opening_cash + benefitAmount,
+      policy_support: flow.month === fromMonth ? flow.policy_support + benefitAmount : flow.policy_support,
+      closing_cash: flow.closing_cash + benefitAmount
+    };
+  });
 }
 
 export function toWon(value: string | number) {
