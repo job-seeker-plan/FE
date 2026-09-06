@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ExternalLink, RotateCcw, Search, TrendingUp } from "lucide-react";
 import type { CompanySuggestion, HiringSeason, JobFilter, LinkareerRecruitmentResult } from "../types";
-import { employmentTypes, jobCategoryTree, regions } from "../constants";
+import { employmentTypes, jobCategoryTree } from "../constants";
 import { Panel } from "../components/Panel";
 import { Select } from "../components/Select";
 import { request } from "../api";
@@ -23,8 +23,12 @@ const linkareerJobCategory: Record<string, string> = {
 
 const linkareerRegion: Record<string, string> = {
   "서울": "2", "부산": "3", "대구": "4", "인천": "5", "광주": "6", "대전": "7", "울산": "8", "경기": "9", "강원": "10",
-  "충북": "11", "충남": "11", "전북": "25", "전남": "25", "경북": "26", "경남": "26", "제주": "27", "세종": "28", "해외": "29"
+  "충청": "11", "전라": "25", "경상": "26", "제주": "27", "세종": "28", "해외": "29"
 };
+
+const jobRegionOptions = [
+  "서울", "부산", "대구", "인천", "광주", "대전", "울산", "경기", "강원", "충청", "전라", "경상", "제주", "세종", "해외"
+];
 
 export function JobsView() {
   const [filter, setFilter] = useState<JobFilter>(emptyFilter);
@@ -126,7 +130,10 @@ export function JobsView() {
           category_id: linkareerJobCategory[filter.jobMajorCategory] || null,
           region_id: linkareerRegion[filter.regions[0] ?? ""] || null,
           job_type: filter.employmentType === "any" ? null : filter.employmentType,
-          page
+          page,
+          region_name: filter.regions[0] ?? null,
+          experience: filter.experience === "any" ? null : filter.experience,
+          deadline_within_days: filter.deadlineWithinDays === "any" ? null : Number(filter.deadlineWithinDays)
         })
       }));
     } catch {
@@ -151,7 +158,7 @@ export function JobsView() {
         </div>
         <div className="job-primary-filters">
           <label className="job-primary-field"><span>검색어</span><input placeholder="예: 백엔드, 마케팅, 인턴" value={filter.keyword} onChange={(event) => updateFilter("keyword", event.target.value)} /></label>
-          <label className="job-primary-field"><span>지역</span><Select value={filter.regions[0] ?? ""} onChange={(value) => updateFilter("regions", value ? [value] : [])} options={[{ value: "", label: "전체 지역" }, ...regions.map((region) => ({ value: region, label: region }))]} /></label>
+          <label className="job-primary-field"><span>지역</span><Select value={filter.regions[0] ?? ""} onChange={(value) => updateFilter("regions", value ? [value] : [])} options={[{ value: "", label: "전체 지역" }, ...jobRegionOptions.map((region) => ({ value: region, label: region }))]} /></label>
           <label className="job-primary-field"><span>직무</span><Select value={filter.jobMajorCategory} onChange={(value) => updateFilter("jobMajorCategory", value)} options={[{ value: "", label: "전체 직무" }, ...Object.keys(jobCategoryTree).map((category) => ({ value: category, label: category }))]} /></label>
         </div>
         <div className="job-filter-row">
