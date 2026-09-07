@@ -2047,6 +2047,12 @@ button.danger {
   line-height: 1.4;
   text-align: center;
 }
+.app-header-logo {
+  display: block;
+  width: 76px;
+  max-height: 44px;
+  object-fit: contain;
+}
 .app-icon-button {
   width: 44px;
   height: 44px;
