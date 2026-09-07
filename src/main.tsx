@@ -61,7 +61,7 @@ function App() {
   const [authReady, setAuthReady] = useState(false);
   const [dashboardReady, setDashboardReady] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
-  const [activeView, setActiveView] = useState<ViewKey>("jobs");
+  const [activeView, setActiveView] = useState<ViewKey>("overview");
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [plan, setPlan] = useState<PlanAnalysis | null>(null);
   const [events, setEvents] = useState<JobEvent[]>([]);
