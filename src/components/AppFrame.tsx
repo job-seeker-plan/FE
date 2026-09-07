@@ -33,7 +33,7 @@ export function AppFrame({ activeView, setActiveView, title, status, children }:
           </div>
           {status && <div className={`status ${status}`}>잔고 상태: {statusLabels[status]}</div>}
         </header>
-        <div className="workspace-content">{children}</div>
+        {children}
       </section>
     </main>
   );

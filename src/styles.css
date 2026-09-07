@@ -10,39 +10,44 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-@media (max-width: 700px) {
-  .job-primary-filters,
-  .job-filter-row {
-    grid-template-columns: 1fr;
-  }
-
-  .jobs-filter-header {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .jobs-filter-header button {
-    width: 100%;
-  }
-}
-
 * {
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  /* Keep scrolling/sticky positioning on the document in modern browsers. */
+  overflow-x: clip;
+  touch-action: pan-x pan-y;
+}
+
 html {
-  /* Keep the content width stable when a short loading state replaces a long page. */
-  scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
-  min-width: 320px;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
 }
 
 button,
-input {
+input,
+textarea,
+select {
   font: inherit;
+}
+
+img,
+video,
+canvas {
+  max-width: 100%;
 }
 
 input[type="number"] {
@@ -626,11 +631,6 @@ button.preset.active {
 .workspace {
   min-width: 0;
   padding: 28px;
-}
-
-.workspace-content {
-  min-width: 0;
-  display: flow-root;
 }
 
 .topbar {
@@ -1574,8 +1574,6 @@ button.danger {
 @media (max-width: 900px) {
   .app-shell {
     grid-template-columns: 1fr;
-    /* The navigation must not absorb free height while the content is loading. */
-    grid-template-rows: auto 1fr;
   }
 
   .landing-layout {
@@ -1910,6 +1908,7 @@ button.danger {
   display: grid;
   place-items: center;
   min-height: 560px;
+  min-height: min(640px, 78svh);
   padding: 48px 24px;
   overflow: hidden;
   border: 1px solid #e5edf9;
@@ -1920,7 +1919,7 @@ button.danger {
 .loading-content { width: min(100%, 460px); text-align: center; }
 .loading-brand { display: inline-flex; align-items: center; gap: 12px; color: #2563eb; font-size: 23px; font-weight: 900; letter-spacing: -1px; }
 .loading-brand > span { padding-left: 12px; border-left: 1px solid #cad7ed; color: #7183a2; font-size: 9px; font-weight: 700; letter-spacing: 2px; }
-.loading-art { position: relative; width: 280px; height: 250px; margin: 26px auto 20px; }
+.loading-art { position: relative; width: min(280px, 100%); height: 250px; margin: 26px auto 20px; }
 .loading-orbit { position: absolute; inset: 10px 20px; border: 1px dashed #c7d7f4; border-radius: 50%; transform: rotate(-20deg); }
 .loading-plan { position: absolute; top: 44px; left: 51px; width: 178px; padding: 22px 18px; border: 1px solid #fff; border-radius: 20px; background: linear-gradient(145deg, #fff, #f7faff); box-shadow: 0 22px 48px #3561a91c, 0 4px 10px #3561a909; transform: rotate(-7deg); animation: loading-hover 4s ease-in-out infinite; }
 .loading-plan-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
@@ -1954,4 +1953,53 @@ button.danger {
 @media (prefers-reduced-motion: reduce) {
   .loading-plan, .loading-float, .loading-track span { animation: none; }
   .loading-track span { width: 100%; opacity: .65; }
+}
+
+/* Keep mobile overrides after desktop rules so fixed grid tracks cannot win. */
+@media (max-width: 900px) {
+  .app-shell,
+  .landing-layout,
+  .onboarding-layout,
+  .dashboard-grid,
+  .policy-page-layout,
+  .calendar-layout,
+  .form-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .panel,
+  .login-card,
+  .job-result-card,
+  .form-row > *,
+  .job-primary-filters > *,
+  .job-filter-row > * {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 700px) {
+  .job-primary-filters,
+  .job-filter-row,
+  .job-result-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .jobs-filter-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .jobs-filter-header button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 900px), (pointer: coarse) {
+  /* Smaller text in focused form controls can trigger iOS focus zoom. */
+  #root :is(input, textarea, select, .select-trigger) {
+    font-size: max(16px, 1rem);
+    min-width: 0;
+    max-width: 100%;
+  }
 }
