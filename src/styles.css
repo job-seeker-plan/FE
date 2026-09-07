@@ -2039,6 +2039,9 @@ button.danger {
   background: #fff;
 }
 .app-header h1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0;
   font-size: 18px;
   line-height: 1.4;
