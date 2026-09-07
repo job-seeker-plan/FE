@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, RotateCcw, Search, TrendingUp } from "lucide-react";
-import type { CompanySuggestion, HiringSeason, JobFilter, LinkareerRecruitmentResult } from "../types";
+import { CalendarCheck, CalendarPlus, ChevronDown, RotateCcw, Search, TrendingUp } from "lucide-react";
+import type { CompanySuggestion, HiringSeason, JobEvent, JobFilter, LinkareerRecruitment, LinkareerRecruitmentResult } from "../types";
 import { employmentTypes, jobCategoryTree, regions } from "../constants";
 import { Panel } from "../components/Panel";
 import { request } from "../api";
@@ -29,12 +29,14 @@ function pageNumbers(currentPage: number, totalPages: number) {
   return Array.from({ length: Math.min(5, totalPages - start + 1) }, (_, index) => start + index);
 }
 
-export function JobsView() {
+export function JobsView({ addedJobEventIds, onJobEventAdded }: { addedJobEventIds: Set<string>; onJobEventAdded: (event: JobEvent) => void }) {
   const [filter, setFilter] = useState<JobFilter>(emptyFilter);
   const [searched, setSearched] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [result, setResult] = useState<LinkareerRecruitmentResult | null>(null);
+  const [addingJobId, setAddingJobId] = useState<string | null>(null);
+  const [jobEventError, setJobEventError] = useState<string | null>(null);
 
   // 채용 시즌 정보 - 실시간 공고 검색(위 필터)이랑은 별개로, 회사 하나를 골라서
   // "이 회사는 보통 언제 채용이 몰리는지" 과거 이력을 보여주는 부분.
@@ -117,6 +119,37 @@ export function JobsView() {
       || (daysUntilDeadline !== null && daysUntilDeadline >= 0 && daysUntilDeadline <= Number(filter.deadlineWithinDays));
     return experienceMatches && deadlineMatches;
   }) ?? [];
+
+  // 채용공고를 캘린더의 "서류 마감" 일정으로 추가한다. memo에 "job:<공고id>"를
+  // 남겨 중복 추가를 막고(addedJobEventIds), 성공하면 부모(main.tsx)의 전역
+  // events 상태에도 반영해 캘린더/일정 목록이 바로 갱신되도록 한다.
+  async function addJobToSchedule(job: LinkareerRecruitment) {
+    if (addedJobEventIds.has(job.id) || addingJobId === job.id) return;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(job.deadline)) {
+      setJobEventError("마감일이 명확하지 않아 자동으로 일정을 추가할 수 없어요. 공고 원문에서 마감일을 확인해 주세요.");
+      return;
+    }
+    setJobEventError(null);
+    setAddingJobId(job.id);
+    try {
+      const savedEvent = await request<JobEvent>("/events", {
+        method: "POST",
+        body: JSON.stringify({
+          title: `${job.company} · ${job.title}`,
+          event_type: "document_deadline",
+          event_date: job.deadline,
+          expected_cost: 0,
+          memo: `job:${job.id}`
+        })
+      });
+      onJobEventAdded(savedEvent);
+    } catch {
+      setJobEventError("일정을 추가하지 못했어요. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setAddingJobId(null);
+    }
+  }
+
   async function searchJobs(page = 1) {
     try {
       setSearching(true);
@@ -166,12 +199,22 @@ export function JobsView() {
       </Panel>
       <Panel title="검색 결과">
         {searchError && <p className="jobs-search-error">{searchError}</p>}
+        {jobEventError && <p className="jobs-search-error">{jobEventError}</p>}
         {!searchError && result && visibleJobs.length > 0 && <div className="job-result-list">
           <p className="jobs-result-note">공개 채용공고 {result.total_count.toLocaleString()}건 중 {rangeStart.toLocaleString()}–{rangeEnd.toLocaleString()}번째 · 현재 페이지 필터 결과 {visibleJobs.length}건{result.cached ? " · 최근 검색 결과" : ""}</p>
           {visibleJobs.map((job) => <article className="job-result-card" key={job.id}>
             <div><strong>{job.title}</strong><span>{job.company}</span></div>
             <div className="job-result-meta"><span>{job.locations.join(" · ") || "근무지 원문 확인"}</span><span>{job.categories.join(" · ") || job.employment_type}</span><span>{job.employment_type} · {job.deadline}</span></div>
-            
+            <button
+              type="button"
+              className="secondary icon-button-text"
+              disabled={addedJobEventIds.has(job.id) || addingJobId === job.id}
+              onClick={() => void addJobToSchedule(job)}
+            >
+              {addedJobEventIds.has(job.id)
+                ? <><CalendarCheck size={14} />서류마감에 추가됨</>
+                : <><CalendarPlus size={14} />{addingJobId === job.id ? "추가 중" : "일정 추가"}</>}
+            </button>
           </article>)}
           {totalPages > 1 && <nav className="job-pagination" aria-label="공고 검색 결과 페이지">
             <button type="button" className="secondary" disabled={searching || result.page === 1} onClick={() => void searchJobs(result.page - 1)}>이전</button>
