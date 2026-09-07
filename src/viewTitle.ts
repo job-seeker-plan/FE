@@ -5,5 +5,5 @@ export function viewTitle(view: ViewKey) {
   if (view === "policies") return "정책 매칭";
   if (view === "settings") return "설정";
   if (view === "jobs") return "채용 공고";
-  return "Overview";
+  return "메인";
 }
