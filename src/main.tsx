@@ -168,6 +168,24 @@ function App() {
     return [...costs.entries()].sort();
   }, [events]);
 
+  // Job postings added to the schedule from the Jobs tab are tagged with
+  // memo "job:<recruitmentId>" (mirrors the "policy:<id>" convention used
+  // for confirmed policy deadlines below), so this derives which postings
+  // already have a 서류 마감 event without a separate join table.
+  const addedJobEventIds = useMemo(() => {
+    const ids = new Set<string>();
+    events.forEach((event) => {
+      const match = event.memo.match(/^job:(.+)$/);
+      if (match) ids.add(match[1]);
+    });
+    return ids;
+  }, [events]);
+
+  function registerJobEvent(event: JobEvent) {
+    setEvents((current) => [...current, event].sort((left, right) => left.event_date.localeCompare(right.event_date)));
+    void refreshPlan();
+  }
+
   async function addEvent() {
     if (!eventForm.title || !eventForm.event_date) return;
     try {
@@ -475,7 +493,7 @@ function App() {
 
   return (
     <AppFrame activeView={activeView} setActiveView={setActiveView} title={viewTitle(activeView)} status={plan?.status ?? null}>
-      {activeView === "jobs" && <JobsView />}
+      {activeView === "jobs" && <JobsView addedJobEventIds={addedJobEventIds} onJobEventAdded={registerJobEvent} />}
       {activeView === "calendar" && <CalendarView {...shared} />}
       {activeView === "policies" && <PoliciesView {...shared} hiddenPolicyIds={hiddenPolicyIds} hidePolicy={hidePolicy} restorePolicy={restorePolicy} />}
       {activeView === "settings" && <SettingsView profile={profile} onLogout={logout} updateProfile={updateProfile} updateNotice={settingsNotice} contextForm={financialContextForm} setContextForm={setFinancialContextForm} updateFinancialContexts={updateFinancialContexts} contextNotice={contextNotice} />}
