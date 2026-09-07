@@ -447,7 +447,11 @@ function App() {
   }
 
   if (!dashboardReady || savingProfile) {
-    return <LoadingScreen fullScreen title={savingProfile ? "나만의 취업 플랜을 만들고 있어요" : undefined} />;
+    return (
+      <AppFrame activeView={activeView} setActiveView={setActiveView} title={viewTitle(activeView)} status={plan?.status ?? null}>
+        <LoadingScreen title={savingProfile ? "나만의 취업 플랜을 만들고 있어요" : undefined} />
+      </AppFrame>
+    );
   }
 
   if (!profile) {
