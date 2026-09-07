@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AlertTriangle } from "lucide-react";
 import "./styles.css";
@@ -27,11 +27,13 @@ import { useEmailImport } from "./hooks/useEmailImport";
 import { AppFrame } from "./components/AppFrame";
 import { LoginScreen } from "./screens/LoginScreen";
 import { Onboarding } from "./screens/Onboarding";
-import { OverviewView } from "./screens/OverviewView";
-import { JobsView } from "./screens/JobsView";
-import { CalendarView } from "./screens/CalendarView";
-import { PoliciesView } from "./screens/PoliciesView";
-import { SettingsView } from "./screens/SettingsView";
+import { LoadingScreen } from "./components/LoadingScreen";
+
+const OverviewView = lazy(() => import("./screens/OverviewView").then((module) => ({ default: module.OverviewView })));
+const JobsView = lazy(() => import("./screens/JobsView").then((module) => ({ default: module.JobsView })));
+const CalendarView = lazy(() => import("./screens/CalendarView").then((module) => ({ default: module.CalendarView })));
+const PoliciesView = lazy(() => import("./screens/PoliciesView").then((module) => ({ default: module.PoliciesView })));
+const SettingsView = lazy(() => import("./screens/SettingsView").then((module) => ({ default: module.SettingsView })));
 
 const CONTEXT_DATA_TYPE_TO_FIELD: Record<string, keyof FinancialContextForm> = {
   goal: "goal",
@@ -57,6 +59,8 @@ function App() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [authProviders, setAuthProviders] = useState<AuthProvider[]>([]);
   const [authReady, setAuthReady] = useState(false);
+  const [dashboardReady, setDashboardReady] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
   const [activeView, setActiveView] = useState<ViewKey>("jobs");
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [plan, setPlan] = useState<PlanAnalysis | null>(null);
@@ -113,6 +117,8 @@ function App() {
       setFinancialContextForm(contextsToForm(nextContexts ?? []));
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "알 수 없는 오류가 발생했습니다.");
+    } finally {
+      setDashboardReady(true);
     }
   }
 
@@ -389,6 +395,8 @@ function App() {
   }
 
   async function saveProfile() {
+    if (savingProfile) return;
+    setSavingProfile(true);
     try {
       setProfileNotice(null);
       await submitProfile(profileForm);
@@ -397,6 +405,8 @@ function App() {
       await loadDashboard();
     } catch {
       setProfileNotice("입력값을 다시 확인해 주세요.");
+    } finally {
+      setSavingProfile(false);
     }
   }
 
@@ -429,11 +439,15 @@ function App() {
   }
 
   if (!authReady) {
-    return <main className="shell">로그인 상태를 확인하는 중입니다.</main>;
+    return <LoadingScreen fullScreen description="로그인 정보를 확인하고 있어요. 잠시만 기다려 주세요." />;
   }
 
   if (!authUser) {
     return <LoginScreen providers={authProviders} />;
+  }
+
+  if (!dashboardReady || savingProfile) {
+    return <LoadingScreen fullScreen title={savingProfile ? "나만의 취업 플랜을 만들고 있어요" : undefined} />;
   }
 
   if (!profile) {
@@ -476,11 +490,13 @@ function App() {
 
   return (
     <AppFrame activeView={activeView} setActiveView={setActiveView} title={viewTitle(activeView)} status={plan?.status ?? null}>
+      <Suspense key={activeView} fallback={<LoadingScreen title={`${viewTitle(activeView)} 화면을 준비하고 있어요`} description="곧 준비가 끝나요. 잠시만 기다려 주세요." />}>
       {activeView === "overview" && <OverviewView {...shared} />}
       {activeView === "jobs" && <JobsView />}
       {activeView === "calendar" && <CalendarView {...shared} />}
       {activeView === "policies" && <PoliciesView {...shared} hiddenPolicyIds={hiddenPolicyIds} hidePolicy={hidePolicy} restorePolicy={restorePolicy} />}
       {activeView === "settings" && <SettingsView profile={profile} onLogout={logout} updateProfile={updateProfile} updateNotice={settingsNotice} contextForm={financialContextForm} setContextForm={setFinancialContextForm} updateFinancialContexts={updateFinancialContexts} contextNotice={contextNotice} />}
+      </Suspense>
     </AppFrame>
   );
 }
