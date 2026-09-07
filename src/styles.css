@@ -1892,3 +1892,55 @@ button.danger {
   font-size: 12px;
   font-weight: 600;
 }
+
+/* Shared loading state for authentication, setup and lazy screen navigation. */
+.loading-screen {
+  display: grid;
+  place-items: center;
+  min-height: 560px;
+  min-height: min(640px, 78svh);
+  padding: 48px 24px;
+  overflow: hidden;
+  border: 1px solid #e5edf9;
+  border-radius: 24px;
+  background: radial-gradient(ellipse at 50% 38%, #e6eeff 0%, #f5f8ff 42%, #fbfcff 76%);
+}
+.loading-screen-full { min-height: 100svh; border: 0; border-radius: 0; }
+.loading-content { width: min(100%, 460px); text-align: center; }
+.loading-brand { display: inline-flex; align-items: center; gap: 12px; color: #2563eb; font-size: 23px; font-weight: 900; letter-spacing: -1px; }
+.loading-brand > span { padding-left: 12px; border-left: 1px solid #cad7ed; color: #7183a2; font-size: 9px; font-weight: 700; letter-spacing: 2px; }
+.loading-art { position: relative; width: 280px; height: 250px; margin: 26px auto 20px; }
+.loading-orbit { position: absolute; inset: 10px 20px; border: 1px dashed #c7d7f4; border-radius: 50%; transform: rotate(-20deg); }
+.loading-plan { position: absolute; top: 44px; left: 51px; width: 178px; padding: 22px 18px; border: 1px solid #fff; border-radius: 20px; background: linear-gradient(145deg, #fff, #f7faff); box-shadow: 0 22px 48px #3561a91c, 0 4px 10px #3561a909; transform: rotate(-7deg); animation: loading-hover 4s ease-in-out infinite; }
+.loading-plan-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+.loading-plan-heading > span:first-child { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: #e9f0ff; color: #4c7fe8; }
+.loading-plan-label { color: #6b7e9a; font-size: 8px; font-weight: 800; letter-spacing: 1px; text-align: left; }
+.loading-plan-label i { display: block; width: 55px; height: 6px; margin-top: 8px; border-radius: 9px; background: #dce6f7; }
+.loading-plan-row { display: flex; align-items: center; gap: 9px; margin-top: 12px; }
+.loading-plan-row > span { display: grid; place-items: center; width: 19px; height: 19px; border-radius: 6px; background: #e7efff; color: #5e89e6; }
+.loading-plan-row > i { width: 94px; height: 6px; border-radius: 9px; background: #e4ebf6; }
+.loading-plan-row:last-child > i { width: 62px; }
+.loading-plan-row:last-child > span { border: 1px solid #dce5f3; background: transparent; }
+.loading-float { position: absolute; z-index: 1; display: grid; place-items: center; border: 1px solid #fff; box-shadow: 0 8px 24px #426eab14; animation: loading-bob 3.5s ease-in-out infinite; }
+.loading-float-calendar { top: 35px; right: 5px; width: 58px; height: 58px; border-radius: 18px; background: #fff; color: #698ded; transform: rotate(12deg); }
+.loading-float-check { bottom: 16px; left: 25px; width: 44px; height: 44px; border-radius: 15px; color: #329e8b; background: #e4f6ee; animation-delay: -1.5s; }
+.loading-spark { position: absolute; top: 10px; left: 42px; color: #8ba8eb; }
+.loading-dot { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: #9eb8ef; }
+.loading-dot-one { right: 21px; bottom: 44px; }
+.loading-dot-two { left: 10px; top: 110px; width: 5px; height: 5px; background: #9dd9ca; }
+.loading-content h2 { margin: 0; color: #273b5c; font-size: clamp(20px, 3vw, 25px); font-weight: 750; letter-spacing: -.8px; line-height: 1.45; word-break: keep-all; }
+.loading-content p { margin: 12px auto 0; max-width: 340px; color: #72819b; font-size: 14px; line-height: 1.8; word-break: keep-all; }
+.loading-track { width: 132px; height: 4px; margin: 28px auto 16px; overflow: hidden; border-radius: 10px; background: #e0e9f8; }
+.loading-track span { display: block; width: 45%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #9bbcff, #527ee9); animation: loading-progress 1.7s ease-in-out infinite; }
+.loading-caption { color: #8291a8; font-size: 11px; letter-spacing: .5px; }
+@keyframes loading-hover { 0%, 100% { transform: translateY(0) rotate(-7deg); } 50% { transform: translateY(-8px) rotate(-4deg); } }
+@keyframes loading-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+@keyframes loading-progress { 0% { transform: translateX(-110%); } 100% { transform: translateX(330%); } }
+@media (max-width: 480px) {
+  .loading-screen { padding: 32px 18px; }
+  .loading-art { margin-top: 18px; margin-bottom: 12px; transform: scale(.88); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-plan, .loading-float, .loading-track span { animation: none; }
+  .loading-track span { width: 100%; opacity: .65; }
+}
