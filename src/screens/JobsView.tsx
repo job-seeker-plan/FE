@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ExternalLink, RotateCcw, Search, TrendingUp } from "lucide-react";
+import { ChevronDown, RotateCcw, Search, TrendingUp } from "lucide-react";
 import type { CompanySuggestion, HiringSeason, JobFilter, LinkareerRecruitmentResult } from "../types";
 import { employmentTypes, jobCategoryTree } from "../constants";
 import { Panel } from "../components/Panel";
@@ -175,7 +175,6 @@ export function JobsView() {
           {visibleJobs.map((job) => <article className="job-result-card" key={job.id}>
             <div><strong>{job.title}</strong><span>{job.company}</span></div>
             <div className="job-result-meta"><span>{job.locations.join(" · ") || "근무지 원문 확인"}</span><span>{job.categories.join(" · ") || job.employment_type}</span><span>{job.employment_type} · {job.deadline}</span></div>
-            <a href={job.url} target="_blank" rel="noreferrer">공고 보기 <ExternalLink size={14} /></a>
           </article>)}
           {totalPages > 1 && <nav className="job-pagination" aria-label="공고 검색 결과 페이지">
             <button type="button" className="secondary" disabled={searching || result.page === 1} onClick={() => void searchJobs(result.page - 1)}>이전</button>
