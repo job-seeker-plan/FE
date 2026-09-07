@@ -1915,7 +1915,23 @@ button.danger {
   border-radius: 24px;
   background: radial-gradient(ellipse at 50% 38%, #e6eeff 0%, #f5f8ff 42%, #fbfcff 76%);
 }
-.loading-screen-full { min-height: 100svh; border: 0; border-radius: 0; }
+/* Cover the viewport even when rendered inside the workspace's Suspense boundary. */
+.loading-screen.loading-screen-full {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 0;
+  border-radius: 0;
+  padding: max(32px, env(safe-area-inset-top, 0px))
+    max(18px, env(safe-area-inset-right, 0px))
+    max(32px, env(safe-area-inset-bottom, 0px))
+    max(18px, env(safe-area-inset-left, 0px));
+}
 .loading-content { width: min(100%, 460px); text-align: center; }
 .loading-brand { display: inline-flex; align-items: center; gap: 12px; color: #2563eb; font-size: 23px; font-weight: 900; letter-spacing: -1px; }
 .loading-brand > span { padding-left: 12px; border-left: 1px solid #cad7ed; color: #7183a2; font-size: 9px; font-weight: 700; letter-spacing: 2px; }

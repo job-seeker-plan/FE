@@ -490,7 +490,7 @@ function App() {
 
   return (
     <AppFrame activeView={activeView} setActiveView={setActiveView} title={viewTitle(activeView)} status={plan?.status ?? null}>
-      <Suspense key={activeView} fallback={<LoadingScreen title={`${viewTitle(activeView)} 화면을 준비하고 있어요`} description="곧 준비가 끝나요. 잠시만 기다려 주세요." />}>
+      <Suspense key={activeView} fallback={<LoadingScreen fullScreen title={`${viewTitle(activeView)} 화면을 준비하고 있어요`} description="곧 준비가 끝나요. 잠시만 기다려 주세요." />}>
       {activeView === "overview" && <OverviewView {...shared} />}
       {activeView === "jobs" && <JobsView />}
       {activeView === "calendar" && <CalendarView {...shared} />}
