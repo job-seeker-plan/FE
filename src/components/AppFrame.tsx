@@ -43,7 +43,7 @@ export function AppFrame({ activeView, setActiveView, title, status, children }:
       <header className="app-header">
         <button ref={triggerRef} className="app-icon-button" type="button" aria-label="메뉴 열기" aria-haspopup="dialog" aria-expanded={menuOpen} aria-controls="app-navigation" onClick={() => setMenuOpen(true)}><Menu size={23} /></button>
         <h1 aria-label={activeView === "overview" ? "메인" : undefined}>
-          {activeView === "overview" ? <House size={24} aria-hidden="true" /> : title}
+          {activeView === "overview" ? <img className="app-header-logo" src={logo} alt="J2W" /> : title}
         </h1>
         <button className={`app-icon-button${activeView === "overview" ? " is-current" : ""}`} type="button" aria-label="메인 화면으로 이동" aria-current={activeView === "overview" ? "page" : undefined} onClick={() => navigate("overview")}><House size={22} /></button>
       </header>
