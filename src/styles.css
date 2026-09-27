@@ -2009,6 +2009,7 @@ button.danger {
 /* App navigation: the dashboard remains the home screen on every device. */
 .app-shell.mobile-app-shell {
   display: block;
+  min-height: 100vh;
   min-height: 100svh;
 }
 .app-header {
@@ -2117,9 +2118,23 @@ button.danger {
 .app-drawer-link.is-current { background: #edf4ff; color: #2563eb; }
 .app-drawer-link.is-current .app-drawer-icon { background: #dfeaff; }
 @keyframes app-drawer-enter { from { transform: translateX(-100%); } to { transform: translateX(0); } }
-@media (max-width: 620px) {
+/* Keep the mobile navigation rules after the legacy sidebar media queries. */
+@media (max-width: 768px) {
   .mobile-app-shell > .workspace { padding: 16px 12px 24px; }
-  .app-header { padding-inline: 12px; }
+  .mobile-app-shell > .app-header {
+    top: env(safe-area-inset-top, 0px);
+    padding-inline: 12px;
+  }
+  .app-drawer {
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .loading-screen.loading-screen-full {
+    height: 100dvh;
+    /* Keep the top of the content reachable on short landscape screens. */
+    align-items: safe center;
+  }
   .mobile-app-shell .summary-strip { gap: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
