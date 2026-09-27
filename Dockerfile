@@ -11,5 +11,16 @@ RUN npm run build
 
 FROM nginx:1.27-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# React Router-less SPA still needs unknown paths (e.g. a refresh on /calendar)
+# to fall back to index.html instead of nginx's default 404. $uri.html is tried
+# first so extension-less static pages copied from public/ (e.g. /privacy ->
+# privacy.html, required for the Google OAuth consent screen) resolve correctly
+# instead of falling through to the SPA shell.
+RUN printf 'server {\n\
+    listen 80;\n\
+    root /usr/share/nginx/html;\n\
+    location / {\n\
+        try_files $uri $uri.html /index.html;\n\
+    }\n\
+}\n' > /etc/nginx/conf.d/default.conf
 EXPOSE 80
